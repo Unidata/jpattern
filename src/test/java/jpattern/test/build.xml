@@ -89,7 +89,8 @@ Test12
 
 <!-- BUILD TASKS  -->
 
-<target name="all" depends="compile,test,report"/>
+<target name="all" depends="clean,setup,generate,compile,runtests,report"/>
+<target name="test" depends="all"/>
 
 <target name="setup">
     <mkdir dir="./build"/>
@@ -120,7 +121,7 @@ Test12
         <fileset file="empty"/>
 -->
 
-<target name="compile" depends="setup,generate">
+<target name="compile">
     <echo message="compiling drivers..."/>
     <javac includeantruntime="false"
            classpath="${CLASSDIR}:${JPATTERNJAR}"
@@ -137,6 +138,7 @@ Test12
 
 <target name="generate1">
     <!-- translate .pat to .java -->
+   <echo message="Generate: Test${NUMBER}"/>
     <java fork="true"
 	  classpath="${CLASSDIR}:${JPATTERNJAR}"
 	  classname="${COMPMAIN}"
@@ -213,6 +215,7 @@ Test12
 <target name="run1">
    <deref name="DATA" value="DATA${NUMBER}"/>
    <property name="TEST" value="Test${NUMBER}"/>
+   <echo message="${TEST}: subject='${DATA}'"/>
    <!-- run the test -->
     <java fork="true"
           classpath="${CLASSDIR}:${JPATTERNJAR}"
@@ -232,7 +235,7 @@ Test12
    <run TEST="Test${NUMBER}" ARGS="-subject ${DATA}"/>
 -->
 
-<target name="test">
+<target name="runtests">
     <foreach list="${TESTNUMBERS}" delimiter=" "
              target="run1" param="NUMBER"
              inheritall="true" trim="true" />
