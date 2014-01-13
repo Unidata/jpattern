@@ -1,0 +1,11 @@
+Example 3a3
+Testclass: jpattern.test.Test3a3
+Defined patterns:
+TestPattern=PC_Span_CS("0123456789") & (PC_Arbno_S |= (PC_Char('_') & PC_Span_CS("0123456789") & PC_Arbno_S...)) & PC_Char('#') & PC_Span_CS("0123456789abcdefABCDEF") & (PC_Arbno_S |= (PC_Char('_') & PC_Span_CS("0123456789abcdefABCDEF") & PC_Arbno_S...)) & PC_Char('#')
+Bnum=PC_Span_CS("0123456789") & (PC_Arbno_S |= (PC_Char('_') & PC_Span_CS("0123456789") & PC_Arbno_S...)) & PC_Char('#') & PC_Span_CS("0123456789abcdefABCDEF") & (PC_Arbno_S |= (PC_Char('_') & PC_Span_CS("0123456789abcdefABCDEF") & PC_Arbno_S...)) & PC_Char('#')
+match: subject="16#123_abc#" pattern=TestPattern
+matchresult=MatchResult(0,11,|16#123_abc#|)
+succeed: |^16#123_abc#^|
+(non-pattern) vars after:
+----------
+----------

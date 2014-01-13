@@ -1,0 +1,25 @@
+Example 12
+Testclass: jpattern.test.Test12
+Defined patterns:
+TestPattern=(PC_External_X(RE([a][b])) |= (PC_External_Y(RE()))) & PC_Char('c')
+Testclass: jpattern.test.Test12; Extern Set:
+RE=REPattern()
+match: subject="ababc" pattern=TestPattern
+RE Matcher=REMatcher([a][b])
+initial: subject=ababc
+initial: anchor=0
+initial: cursor=0
+initial: target=ababc
+initial: sf=true
+initial: start=0; end=2
+retry: subject=ababc
+retry: anchor=0
+retry: cursor=2
+retry: target=abc
+retry: sf=true
+retry: start=0; end=2
+matchresult=MatchResult(0,5,|ababc|)
+succeed: |^ababc^|
+(non-pattern) vars after:
+----------
+----------

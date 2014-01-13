@@ -1,0 +1,15 @@
+Example 2a
+Testclass: jpattern.test.Test2a
+Defined patterns:
+TestPattern=PC_NSpan_CH(' ') & PC_R_Enter & PC_Rpat(+N) & PC_Assign_Imm(+Num1) & PC_Span_CS(" ,") & PC_R_Enter & PC_Rpat(+N) & PC_Assign_Imm(+Num2)
+B=PC_NSpan_CH(' ')
+N=PC_Span_CS("0123456789")
+T=PC_NSpan_CH(' ') & PC_R_Enter & PC_Rpat(+N) & PC_Assign_Imm(+Num1) & PC_Span_CS(" ,") & PC_R_Enter & PC_Rpat(+N) & PC_Assign_Imm(+Num2)
+match: subject="124, 257" pattern=TestPattern
+matchresult=MatchResult(0,8,|124, 257|)
+succeed: |^124, 257^|
+(non-pattern) vars after:
+----------
+Num1="124"
+Num2="257"
+----------

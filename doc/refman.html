@@ -1,0 +1,1571 @@
+<html>
+  <head>
+    <title>JPattern: Snobol4-Style Pattern Matching Primitives for Java</title>
+    <meta http-equiv="Owner" content="Dennis Heimbigner">
+    <meta http-equiv="Reply-to" content="dennis.heimbigner@colorado.edu">
+    <link rev="made" href="mailto:dennis.heimbigner@colorado.edu">
+    <base target="_top">
+  </head>
+<body>
+
+<center>
+<h1>JPattern</h1>
+<h2>Snobol4-Style Pattern Matching Primitives for Java</h2>
+<h2 align="center">Reference Manual</h2>
+</center>
+<hr>
+<table>
+<tr><td width=200>Last Updated:</td><td>01 October 2007</td></tr>
+<tr><td>Latest Version:</td><td>Jpattern 2.0</td></tr>
+<tr><td>Minimum JDK Level:</td><td>JDK 1.5</td></tr>
+</table>
+<p>
+<h3><u>Table of contents</u></h3>
+<ul>
+<li><a target="_self" href="#Introduction">Introduction</a>
+<li><a target="_self" href="#Tutorial">Pattern Matching Tutorial</a><ul>
+  <li><a target="_self" href="#API">API Overview</a>
+  <ul>
+    <li><a target="_self" href="#Pattern">Pattern Functions</a>
+    <li><a target="_self" href="#Matching">Matching Functions</a>
+    <li><a target="_self" href="#Variables">Variables</a>
+    <li><a target="_self" href="#Grammar">Pattern Specification Language</a>
+  </ul>
+  <li><a target="_self" href="#PatternOverview">Pattern Matching Overview</a>
+  <ul>
+      <li><a target="_self" href="#Moving">Moving the Start Point</a>
+  </ul>
+</ul>
+<li><a target="_self" href="#Available">Available Pattern Descriptions</a>
+<ul>
+    <li><a target="_self" href="#Recursion">Recursive Pattern Matching</a>
+    <li><a target="_self" href="#Assignment">Pattern Assignment Operations</a>
+</ul>
+<li><a target="_self" href="#JavaComm">Interacting With Java</a>
+<li><a target="_self" href="#Compiler">Compiler</a>
+<li><a target="_self" href="#Examples">Examples of Pattern Matching</a>
+<li><a target="_self" href="#Author">Point of Contact</a>
+<li><a target="_self" href="#License">License</a>
+</ul>
+</p>
+<h2><u><a name="Introduction"><b>Introduction</b></a></u></h2>
+
+Most current programming languages provide some form of
+pattern matching. As a rule, the pattern matching is
+based on regular expressions. The Comit/Snobol3/Snobol4/Spitbol
+programming languages have provided pattern matching but
+based on a pattern matching paradigm that is strictly more
+powerful than standard regular expressions.
+<p>
+The goal of this project is to make Snobol4-style pattern matching
+available as a package for the Java programming language.
+Rather than build such a package from scratch,
+Rober Dewar's
+existing
+<a href="http://gcc.gnu.org/onlinedocs/gcc-3.3.6/gnat_rm/The-GNAT-Library.html#The-GNAT-Library">Ada-based Gnat Spitbol Patterns code</a>
+was converted to Java.
+The result is generally consistent with that Ada package, although
+some changes were made to conform to the capabilities and
+limitations of the Java language. In light of the derived nature of this code,
+the original GNAT license is assumed to cover this code.
+The compiler, however is licensed under a BSD license.
+See the <a target="_self" href="#License">License Section</a>
+for more details.
+
+<h2><u><a name="Tutorial"><b>Pattern Matching Tutorial</b></a></u></h2>
+The following introduction is taken from the file G-SPIPAT.ADS.
+It has been modified to conform to the Java version for various
+details.
+
+<h3><u><a name="API">API Overview</a></u></h3>
+The API deliberately bears more than a passing resemblance
+to the <i>java.util.regex</i> structure.
+The major classes are
+<i>jpattern.Pattern</i>,
+<i>jpattern.Matcher</i>
+and <i>jpattern.MatchResult</i> (which is a java interface).
+<p>
+<h4><u><a name="Pattern">Pattern Functions</a></u></h4>
+Pattern class instances are constructed using a set of
+functions defined in the class <i>jpattern.Pattern</i>.
+These pattern functions take one of three kinds of argument types.
+<ol>
+<li> <i>java.lang.string</i>. This represents a simple string. In some cases,
+a string of length one will be treated as a single character.
+<p>
+<li> <i>jpattern.Pattern</i>. This represents a sub-pattern.
+<p>
+<li> <i>jpattern.Variable</i>. This represents a name that will be interpreted
+later to refer to a value in a map. See
+<a target="_self" href="#Variables">Variables</a>
+for more details.
+</ol>
+The specific pattern construction operators are as follows.<p>
+<table>
+<tr><td>Cancel() <td> Concat(Pattern, Pattern) <td> Rem()
+<tr><td>Abort() <td> Defer(Variable) <td> Rest()
+<tr><td>Alternate(Pattern, Pattern) <td> Fail() <td> RPos(int)
+<tr><td>Any(String) <td> Fence() <td> RPos(Variable)
+<tr><td>Any(Variable) <td> Fence(Pattern) <td> RTab(int)
+<tr><td>Arb() <td> IAssign(Pattern, Variable) <td> RTab(Variable)
+<tr><td>Arbno(String P) <td> Java(Object) <td> Setcur(Variable)
+<tr><td>Arbno(Pattern) <td> Len(int) <td> Span(String)
+<tr><td>Assign(Pattern, Variable) <td> Len(Variable) <td> Span(Variable)
+<tr><td>Bal() <td> NotAny(String) <td> Succeed()
+<tr><td>Bal(String) <td> NotAny(Variable) <td> Tab(int)
+<tr><td>Bal(Variable) <td> NSpan(String) <td> Tab(Variable)
+<tr><td>Break(String) <td> NSpan(Variable) <td> StringPattern(String)
+<tr><td>Break(Variable) <td> Pos(int) <td> CharPattern(char)
+<tr><td>BreakX(String) <td> Pos(Variable) <td> External(String,Object...)
+<tr><td>BreakX(Variable) <td> Replace(Pattern, Variable)
+</table>
+<p>
+All of these methods are <i>static public</i>
+and all of them throw the exception <i>jpattern.Error</i>.
+<p>
+Consider the following pattern.
+<blockquote><pre>
+("abc" | "ab") & ("de" | "cd")
+</pre></blockquote>
+This pattern could be construct using the following sequence of
+Pattern functions.
+<p>
+<code>
+Pattern pe1 = Pattern.Alt("abc","ab");<br>
+Pattern pe2 = Pattern.Alt("de","cd");<br>
+Pattern pe3 = Pattern.Concat(pe1,pe2);
+</code>
+
+<h4><u><a name="Matching">Matching</a></u></h4>
+As with <i>java.util.regex.Pattern</i>
+an instance of
+<i>jpattern.Matcher</i>
+is created by calling a factory method of the
+<i>jpattern.Pattern</i>
+class.
+This method has several signatures.
+<pre>
+    public Matcher matcher();
+    public Matcher matcher(String subject);
+    public Matcher matcher(String subject, VarMap vars);
+    public Matcher matcher(String subject, VarMap vars, ExternalMap externs);
+</pre><p>
+The meaning of the VarMap and ExternalMap arguments are explained
+elsewhere in this document.
+<p>
+The class
+<i>jpattern.Matcher</i>
+implements the following relevant methods
+<pre>
+    public boolean match() throws Error;
+    public boolean match(String subject, VarMap vars, ExternalMap externs)
+        throws Error;
+
+    public Matcher setAnchorMode(boolean b);
+    public Matcher setStackSize(int n) throws Error;
+    public Matcher setSubject(String newsubject);
+    public Matcher reset(String newsubject); // alias for setSubject
+    public Matcher setVarMap(VarMap map);
+    public Matcher setExternalMap(ExternalMap map);
+</pre><p>
+The first
+<i>match()</i>
+assumes that the various parameters of the match have already been set,
+either by the call to <i>Pattern.matcher()</i>
+or by invocation of the various parameter setting methods such as
+<i>setSubject()</i>.
+<p>
+The <i>jpattern.MatchResult</i> interface
+- like its <i>java.util.regex.MatchResult</i> analog -
+provides a means for returning three values from
+the match if the match succeeds.
+It is an interface defined as follows.
+<pre>
+public interface MatchResult {
+    public String getSubject();
+    public int getStart();
+    public int getStop();
+}
+</pre><p>
+The meaning of the methods is as follows.
+<ul>
+<li> getStart: the starting cursor index of the location in the Subject string where the successful match started.
+<li> getStop: the cursor index of the location in the Subject string just past the last character where the successful match stopped.
+<li> getSubject: the subject string after the successful match. Unless replacement
+operators occur in the pattern, then this will be the same object
+as the Subject argument to the <i>Match()</i> function.
+</ul>
+Note that the cursor indices are zero-based to be more useful with
+Java strings. This differs
+from the Snobol standard of one-based indices.
+<p>
+The 
+<i>jpattern.Matcher</i> class implements the
+<i>jpattern.MatchResult</i> interface,
+so as a rule, the Matcher can be used to obtain
+the match results.
+
+<h4><u><a name="Variables">Variables</a></u></h4>
+It is possible to use variables within patterns for a number of purposes.
+A variable is represented as a string matching the following regular
+expression: "[_a-zA-Z][_a-zA-Z0-9]*"
+(Note that sometimes RE's are more compact).
+<p>
+As a rule, the variable name should be preceded by the defer operator
+("+") or an assignment operator ("." "$" "*" "**") or
+a replacement operator ("=").
+The leading "+" is not required unless the variable name is also a keyword.
+<p>
+As a rule, any elementary
+<a target="_self" href="#Available">pattern operator</a>
+that takes an argument may have a variable as its argument.
+<p>
+During the match, if a reference to a variable is required, then
+it searched for in the <i>VarMap</i> passed to the <i>jpattern.Matcher</i>.
+The value associated with the variable in the map can be of the
+following types
+(but see also <a target="_self" href="#IDPM">here</a>).
+<dl>
+<dt>
+<i>java.util.Collection</i>
+</dt>
+<dd>
+If a java <i>Collection</i> is associated with the variable,
+and the variable is being used as an immediate assignment
+(e.g. "*x"), then the value assigned to the variable is appended
+to the end of the collection. In conjunction with the <i>fail</i>
+pattern, this can be used to collect all possible matches
+of a pattern against a subject string.
+</dd>
+<dt>
+<i>jpattern.ExternalVariable</i>
+</dt>
+<dd>
+If the value associated with the variable in the map is of this type,
+then the <i>get()</i> method is invoked for that object
+when it is used as a value or as the source of a replace.
+If the variable is being used as the target of an immediate or
+deferred assignment then its <i>put()</i> method is invoked
+to do something with the value. This would allow, for example,
+a trace of a pattern match to be output to standard output.
+See the discussion about
+<a target="_self" href="#JavaComm">communication with Java</a>
+for more details.
+
+</dd>
+<dt>
+<i>java.lang.Object</i>
+</dt>
+<dd>
+For this final case, the object is converted to a string
+and that value is used either for replacement or for matching.
+</dd>
+</dl>
+If the variable is not defined in the map, then if it is involved
+in an assignment, it is inserted into the map. Otherwise, an
+exception is thrown signalling an undefined variable.
+
+
+<h4><u><a name="Grammar">Pattern Specification Language</a></u></h4>
+The string representation of patterns uses the following BNF syntax.
+<pre>
+    pattern := alt;
+    alt := cat | cat '|' alt;
+    cat := replace | replace '&' cat | replace cat;
+    replace := assign | assign '=' variable;
+    assign :=   element
+              | element '**' variable
+              | element '.' variable
+              | element '*' variable
+              | element '$' variable;
+    element := operator | '(' pattern ')' | defer | INT | STRING;
+    operator := 
+                | "+" variable
+                | "abort" | cancel
+                | "any" "(" sjvarg ")"
+                | "arb" "(" sjvarg ")"
+                | "arbno" "(" sjvarg ")"
+                | "bal" | bal "(" sjvarg ")"
+                | "break" "(" sjvarg ")"
+                | "breakx" "(" sjvarg ")"
+                | "fence" | fence "(" sjvarg ")"
+                | "fail"
+                | "len" "(" njvarg ")"
+                | "notany", "(" sjvarg ")"
+                | "nspan" "(" sjvarg ")"
+                | "pos" "(" njvarg ")"
+                | "rem" | "rest"
+                | "rpos", "(" njvarg ")"
+                | "rtab" "(" njvarg ")"
+                | "setcur" "(" defer ")"
+                | "span" "(" sjvarg ")"
+                | "succeed"
+                | "tab" "(" njvarg ")"
+                ;
+    sjvarg := STRING | JAVASTRING | defer;
+    njvarg := INT | JAVASTRING | defer;
+    defer := variable | "+" variable;
+
+    variable := ID;
+
+    # Lexical Elements
+    ID := [_a-zA-Z][_a-zA-Z0-9]* that is not a keyword.
+    INT := [-]?[0-9]+ | "0x" [0-9a-fA-F]+
+    STRING := '"' <escaped characters> '"'
+    JAVASTRING := '`' <escaped characters> '`'
+</pre><p>
+Whitespace (" \t\n\r...") and comments may appear
+in expressions where desired. The comments are either
+the "//...\n" type or the "/*...*/" type.
+Be careful to not put an end-of-line escape before any comments on that line.
+That is, do not write
+<pre>
+@len(5) \ //comment 1
+bal()@
+</pre>
+but rather write this.
+<pre>
+@len(5) //comment 1 \
+bal()@
+</pre>
+<h3><u><a name="PatternOverview">Pattern Matching Overview</a></u></h3>
+We will start with two basic functions: concatenation ("&amp;")
+and alternation ("|").
+If A and B are patterns, then
+"A &amp; B" means try to match A,
+and if that succeeds, then try to match B starting after A.
+Note that the &amp; is actually optional, and the juxtiposition
+of the two patterns is taken to imply concatenation.
+Thus "A B" is the treated the same as "A &amp; B".
+Note that this means you must be careful with whitespace
+since, for example, <i>fence("a")</i> and <i>fence&nbsp;&nbsp;("a")</i>
+mean two different things.
+<p>
+The expression
+"A | B" means try to match A and if that fails,
+then try to match B starting at the same place where the
+attempt to match A began.
+<p>
+There is full backtracking, which means that if a given pattern
+element fails to match, then previous alternatives are matched.
+For example if we have the pattern:
+<blockquote><pre>
+(A | B) (C | D) (E | F)
+</pre></blockquote>
+First we attempt to match A, if that succeeds, then we go on to try
+to match C, and if that succeeds, we go on to try to match E. If E
+fails, then we try F. If F fails, then we go back and try matching
+D instead of C. Let's make this explicit using a specific example,
+and introducing the simplest kind of pattern element, which is a
+literal string. The meaning of this pattern element is simply to
+match the characters that correspond to the string characters. Now
+let's rewrite the above pattern form with specific string literals
+as the pattern elements:
+<blockquote><pre>
+("ABC" | "AB")("DEF" | "CDE")("GH" | "IJ")
+</pre></blockquote>
+The following strings will be attempted in sequence:
+<ol>
+<li> ABC . DEF . GH
+<li> ABC . DEF . IJ
+<li> ABC . CDE . GH
+<li> ABC . CDE . IJ
+<li> AB . DEF . GH
+<li> AB . DEF . IJ
+<li> AB . CDE . GH
+<li> AB . CDE . IJ
+</ol>
+Here we use the dot simply to separate the pieces of the string
+matched by the three separate elements.
+
+<h4><u><a name="Moving">Moving the Start Point</a></u></h4>
+A pattern is not required to match starting at the first character
+of the string, and is not required to match to the end of the string.
+The first attempt does indeed attempt to match starting at the first
+character of the string, trying all the possible alternatives. But
+if all alternatives fail, then the starting point of the match is
+moved one character, and all possible alternatives are attempted at
+the new anchor point.
+<p>
+The entire match fails only when every possible starting point has
+been attempted. As an example, suppose that we had the subject
+string
+<blockquote><pre>
+"ABABCDEIJKL"
+</pre></blockquote>
+matched using the pattern in the previous example:
+<blockquote><pre>
+("ABC" | "AB") &amp; ("DEF" | "CDE") &amp; ("GH" or "IJ")
+</pre></blockquote>
+This would succeed, after two anchor point moves:
+<p>
+<blockquote><pre>
+"ABABCDEIJKL"
+   ^^^^^^^
+</pre></blockquote>
+where the "^^^^^^^" indicates the matched section.
+<p>
+This mode of pattern matching is called the unanchored mode. It is
+also possible to put the pattern matcher into anchored mode by
+calling the function <i>Match.setAnchorMode(true)</i>
+This will cause
+all subsequent matches to be performed in anchored mode, where the
+match is required to start at the first character.
+We will also see later how the effect of an anchored match can be
+obtained for a single specified anchor point if this is desired.
+
+<h3><u><a name="Available">Available Pattern Operations</a></u></h3>
+<ul>
+<li> <a target="_self" href="#Cancel">Abort/Cancel</a>
+<li> <a target="_self" href="#Alternation">Alternation (|)</a>
+<li> <a target="_self" href="#Any">Any</a>
+<li> <a target="_self" href="#Arb">Arb</a>
+<li> <a target="_self" href="#Arbno">Arbno</a>
+<li> <a target="_self" href="#Assign">Assign (. or **)</a>
+<li> <a target="_self" href="#Bal">Bal</a>
+<li> <a target="_self" href="#Break">Break</a>
+<li> <a target="_self" href="#BreakX">BreakX</a>
+<li> <a target="_self" href="#Concatenation">Concatenation (&amp;)</a>
+<li> <a target="_self" href="#Defer">Defer (+)</a>
+<li> <a target="_self" href="#Fail">Fail</a>
+<li> <a target="_self" href="#Fence">Fence</a>
+<li> <a target="_self" href="#IAssign">IAssign ($ or *)</a>
+<li> <a target="_self" href="#Len">Len</a>
+<li> <a target="_self" href="#NotAny">NotAny</a>
+<li> <a target="_self" href="#NSpan">NSpan</a>
+<li> <a target="_self" href="#Pos">Pos</a>
+<li> <a target="_self" href="#Rest">Rem/Rest</a>
+<li> <a target="_self" href="#Rpos">Rpos</a>
+<li> <a target="_self" href="#Rtab">Rtab</a>
+<li> <a target="_self" href="#Span">Span</a>
+<li> <a target="_self" href="#Succeed">Succeed</a>
+<li> <a target="_self" href="#Tab">Tab</a>
+</ul>
+
+<table>
+<tr><th align="left" colspan=2>
+<a name="Cancel"><u>Abort/Cancel</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Abort() or Cancel()</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>abort or cancel</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Abort (Cancel) operator
+immediately aborts the entire pattern match, signalling
+failure. This is a specialized pattern element, which is
+useful in conjunction with some of the special pattern
+elements that have side effects.
+Note: the original spitbol name was Abort, but the GNU version
+changed it to Cancel because Abort is a reserved Ada word.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Alternation"><u>Alternation</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Alternate(Pattern A, Pattern B)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>A | B</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+The
+alternation
+operator means
+first attempt to match A, and then if that does not
+succeed, match B.
+</td>
+</tr>
+</table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Any"><u>Any</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Any(String s)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>any(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Any(S) operator
+where S is a string, matches a single character that is
+any one of the characters in S. Fails if the current
+character is not one of the given set of characters.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Arb"><u>Arb</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Arb()</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>arb</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Arb operator matches any string. First it matches the null string, and
+then on a subsequent failure, matches one character, and
+then two characters, and so on. It only fails if the
+entire remaining string is matched.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Arbno"><u>Arbno</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Arbno(String S) or Arbno(Pattern P)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>arbno(&lt;pattern&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Arbno(P) operator
+where P is any pattern, matches any number of instances
+of the pattern, starting with zero occurrences. It is
+thus equivalent to ("" | (P &amp; ("" | (P &amp; ("" ....))))).
+The pattern P may contain any number of pattern elements
+including the use of alternatiion and concatenation.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Bal"><u>Bal</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Bal() or Bal(String parens)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>bal or bal(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Bal operator
+matches a non-empty string that is parentheses balanced
+with respect to ordinary () characters. Examples of
+balanced strings are "ABC", "A((B)C)", and "A(B)C(D)E".
+Bal matches the shortest possible balanced string on the
+first attempt, and if there is a subsequent failure,
+attempts to extend the string.
+Optionally, the Bal operator can be given a two character string
+to indicate the parentheses characters. For example Bal("[]")
+will match balanced square brackets.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Break"><u>Break</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Break(String S)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>break(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Break(S) operator
+where S is a string, matches a string of zero or more
+characters up to but not including a break character
+that is one of the characters given in the string S.
+Can match the null string, but cannot match the last
+character in the string, since a break character is
+required to be present.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="BreakX"><u>BreakX</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>BreakX(String S)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>breakx(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The BreakX(S) operator
+where S is a string, behaves exactly like Break(S) when
+it first matches, but if a string is successfully matched,
+then a susequent failure causes an attempt to extend the
+matched string.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Concatenation"><u>Concatenation</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Concat(Pattern A, Pattern B)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>A &amp; B</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+The
+concatenation
+operator means
+match A followed immediately by matching B.
+</td>
+</tr>
+</table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Fail"><u>Fail</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Fail()</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>fail</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Fail operator
+is equivalent to the null
+alternation. Matches no possible strings, so it always
+signals failure. This is a specialized pattern element,
+which is useful in conjunction with some of the special
+pattern elements that have side effects.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Fence"><u>Fence</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Fence() or Fence(Pattern p)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>fence or Fence(&lt;pattern&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Fence operator
+matches the null string at first, and then if a failure
+causes alternatives to be sought, aborts the match (like
+a Cancel). Note that using Fence at the start of a pattern
+has the same effect as matching in anchored mode.
+<p>
+The Fence(P) operator, where P is a pattern, attempts to match the pattern P
+including trying all possible alternatives of P. If none
+of these alternatives succeeds, then the Fence pattern
+fails. If one alternative succeeds, then the pattern
+match proceeds, but on a subsequent failure, no attempt
+is made to search for alternative matches of P. The
+pattern P may contain any number of pattern elements
+including the use of alternatiion and concatenation.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Len"><u>Len</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Len(int n)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>len(&lt;integer&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Len(N) operator
+where N is a natural number, matches the given number of
+characters. For example, Len(10) matches any string that
+is exactly ten characters long.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="NotAny"><u>NotAny</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>NotAny(String S)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>notany(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The NotAny(N) operator
+where S is a string, matches a single character that is
+not one of the characters of S. Fails if the current
+characer is one of the given set of characters.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="NSpan"><u>NSpan</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>NSpan(String S)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>nspan(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The NSpan(S) operator
+where S is a string, matches a string of zero or more
+characters that is among the characters given in the
+string. Always matches the longest possible such string.
+Always succeeds, since it can match the null string.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Pos"><u>Pos</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Pos(int n)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>pos(&lt;integer&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Pos(N) operator
+where N is a natural number, matches the null string
+if exactly N characters have been matched so far, and
+otherwise fails.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Rest"><u>Rem/Rest</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Rem() or Rest()</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>rem or rest</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Rem (Rest) operator
+matches from the current point to the last character in
+the string. This is a specialized pattern element, which
+is useful in conjunction with some of the special pattern
+elements that have side effects.
+Note: the original spitbol name was Rem, but the GNU version
+changed it to Rest because Rem is a reserved Ada word.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Rpos"><u>Rpos</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Rpos(int n)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>rpos(&lt;integer&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Rpos(N) operator
+where N is a natural number, matches the null string
+if exactly N characters remain to be matched, and
+otherwise fails.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Rtab"><u>Rtab</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Rtab(int n)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>rtab(&lt;integer&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Rtab(N) operator
+where N is a natural number, matches characters from
+the current position until exactly N characters remain
+to be matched in the string. Fails if fewer than N
+unmatched characters remain in the string.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Span"><u>Span</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Span(String S)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>span(&lt;string&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+The Span(S) operator
+where S is a string, matches a string of one or more
+characters that is among the characters given in the
+string. Always matches the longest possible such string.
+Fails if the current character is not one of the given
+set of characters.
+</td></tr>
+</table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Succeed"><u>Succeed</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Succeed()</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>succeed</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Succeed operator
+repeatedly matches the null string (it is equivalent to
+the alternation ("" | "" | "" ....)). This is a special
+pattern element, which is useful in conjunction with some
+of the special pattern elements that have side effects.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Tab"><u>Tab</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Tab(int n)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>tab(&lt;integer&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>The Tab(N) operator
+where N is a natural number, matches characters from
+the current position until exactly N characters have
+been matched in all. Fails if more than N characters
+have already been matched. It is technically ambiguous
+about its value if the cursor is less than the length
+of the subject string and the length is less than N.
+Here is it assumed that the match fails in this case.
+</td></tr></table>
+<p>
+
+<h3><u><a name="Recursion">Recursive Pattern Matching</a></u></h3>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Defer"><u>Defer</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Defer(Variable B)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>[+]&lt;name&gt;/td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+The Defer operator (+V) where V is a variable,
+obtains at match time
+a value for V from the VarMap argument to the Match function.
+It then proceeds to match that value as if it had been present
+in the original pattern at that point. The leading "+" is optional
+unless the variable name matches a keyword.
+See also the <a target="_self" href="#Variables">Variables</a> discussion.
+<p>
+A deferred pattern can be used to create a recursive pattern
+that will, at pattern matching time, follow
+the pointer to obtain the referenced pattern, and then match this
+pattern.
+Consider for example, the following Java code.
+<blockquote><pre>
+Pattern P
+    = Pattern.Alternate("A",
+                        Pattern.Concat("B",
+                                       Pattern.Defer("P")));
+VarMap vars = new VarMap();
+vars.put("P",P);
+</pre></blockquote>
+By placing the pattern P into the map with the name P (the name can be
+anything consistent), we cause P to recurse through the map.
+The <a target="_self" href="#Examples">Examples</a> section
+provides illustrations of recursive patterns.
+<p>
+On the first attempt to match, this pattern attempts to match the string "A".
+If this fails, then the alternative matches a "B", followed by an
+attempt to match the value of "P", which is of source the Pattern P.
+This second attempt now first attempts to
+match "A", and so on. The result is a pattern that will match a
+string of B's followed by a single A.
+<p>
+This particular example could simply be written
+as <i>nspan("B") &amp; "A"</i>,
+but the use of recursive patterns in the general case can construct
+complex patterns which could not otherwise be built.
+</td></tr>
+</table>
+<p>
+<h3<u><a name="Assignment">Pattern Assignment Operations</a></u></h3>
+In addition to the overall result of a pattern match, which indicates
+success or failure, it is often useful to be able to keep track of
+the pieces of the subject string that are matched by individual
+pattern elements, or subsections of the pattern.
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Assign"><u>Deferred Assignment</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Assign(Pattern P, Variable v)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>&lt;pattern&gt; * &lt;variable&gt; or &lt;pattern&gt; . &lt;variable&gt;</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+The deferred assignment operator
+takes an arbitrary pattern P and a variable V
+that will be set to the substring matched by P.
+The assignment is deferred to the
+end of the match. If the entire match is successful, and if the
+pattern P was part of the successful match, then at the end of the
+matching operation the assignment to S of the string matching P is
+performed.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="IAssign"><u>Immediate Assignment</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>IAssign(Pattern P, Variable v)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>&lt;pattern&gt; ** &lt;variable&gt; or &lt;pattern&gt; $ &lt;variable&gt;</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+The immediate assignment operator
+takes an arbitrary pattern P P a variable V
+that will be set to the substring matched by P. This assignment
+happens during pattern matching, so if P matches more than once,
+then the assignment happens more than once.
+</td></tr></table>
+<p>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Setcursor"><u>Set Cursor</u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Setcur(Variable v)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>setcur(&lt;variable&gt;)</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+This (badly named) cursor assignment operation
+assigns the current cursor position to the variable N. The
+cursor position is defined as the count of characters that have been
+matched so far (including any start point moves).
+<td>
+</td></tr></table>
+<p>
+
+<h3><u><a name="Replacement">Deferred Replacement</a></u></h3>
+<table>
+<tr><th align="left" colspan=2>
+<a name="Replace"><u>Deferred Replacement </u></a>
+</th></tr>
+<tr><td valign="top" width=150>Pattern Function:</td>
+    <td><code>Replace(Pattern P, Variable v)</code></td>
+</tr>
+<tr><td valign="top">Compiler Syntax:</td>
+    <td>&lt;pattern&gt;=&lt;variable&gt;</td>
+</tr>
+<tr><td valign="top">Description:</td>
+<td>
+Deferred replacement is similar to deferred assignment.
+With assignment, a variable is associated with a pattern and
+when matching completes, the substring matched by that pattern
+is assigned to the variable.
+<p>
+With deferred replacement, after a successful match,
+the substring matched by the pattern is replaced by
+the value of the variable (at the end of matching).
+<p>
+In order to access the modified subject string, the MatchResult
+argument must used.
+<td>
+</td></tr></table>
+<p>
+
+<h2><u><a name="JavaComm">Interacting with Java</a></u></h2>
+It can be desirable for a pattern to interact with the surrounding
+Java code, and some (new) mechanisms are provided for that purpose.
+<p>
+It should be realized that the interaction can occur at two
+different points in the lifetime of a pattern. First, interaction
+can occur when a pattern is constructed using the
+<a target="_self" href="#Compiler">the JPattern Pseudo-Compiler</a>.
+Second, interaction can occur when the pattern is used to match a string.
+<p>
+<b><a name="IDPC">Interaction During Pattern Construction</a></b><br>
+Java expressions may be passed through the compilation process
+by enclosing them in backquotes ('`'): `5 + 6`, for example.
+Several test cases - including 1, 3a3 and 5 -
+demonstrate this.  Be careful when using this
+mechanism because no type checking is performed, so you can cause
+type errors when compiling the resulting Java code.
+<p>
+If the java expression in backquotes occurs in a position that requires it
+to be a pattern object, then the expression is passed through a function
+called <i>Pattern.Java()</i>.  This function forces the value of
+the expression to be converted to a Pattern object. This is shown in
+test case 5.
+<p>
+<b><a name="IDPM">Interaction During Pattern Matching</a></b><br>
+Ideally, it should be possible to refer to Java variables
+during pattern matching. Unfortunately, this would require the
+use of reflection, which is cumbersome and relatively slow.
+This is why the
+<a target="_self" href="#Variables">Variable</a>
+mechanism is provided instead.
+<p>
+<b>ExternalVariable:</b>
+Another mechanism, the <i>ExternalVariable</i> mechanism,
+is provided that can give some of the
+benefits of access to surrounding Java.
+Consider the following example (taken from test case 5a).
+<pre>
+class AccessJava implements ExternalVariable {
+...
+    Object current = null;
+...
+    public Object get(VarMap vars) {return current;}
+    public void put(VarMap vars, Object val) {current = val;}
+...
+}
+...
+class Test5 extends Test {
+...
+    AccessJava func;
+...
+    func=new AccessJava();};
+...
+    vars.put("AccessJava",func);
+    Pattern p = @("before" & span(" ")) $ +AccessJava & "after" = +AccessJava@;
+}
+</pre><p>
+The AccessJava class implements the <i>jpattern.ExternalVariable</i> interface.
+This interface provides a method called <i>get()</i>
+and a method called <i>put()</i>.
+is evaluated by the matcher whenever a variable of type <i>ExternalFunction</i>
+is encountered.
+In this case, AccessJava just returns the value of its parent's
+<i>javaVariable1</i>
+instance variable.
+Since this is evaluated at match time, it provides a usable mechanism for
+accessing Java variables and code at that time.
+<p>
+The AccessJava function is used by storing an instance of it under some name
+("AccessJava" in this case) in the variable map that will be passed
+to the <i>Match.match()</i> method.  In the code above, the
+variable AccessJava is referenced at the end of the pattern, so during match
+it will invoke the <i>AccessJava.get()</i> method as the last part of the
+match. Of course, the reference could be any where as long as there
+is no type conflict.
+<p>
+<b>ExternalPattern:</b>
+The <i>ExternalPattern</i> mechanism
+allows users of jpattern to define their own pattern operations.
+<p>
+Let us define a new external pattern called <i>RE(&lt;regular expression&gt;)</i>,
+where the <i>&lt;regular expression&gt;</i> is a string in quotes that represents
+a regular expression as defined by <i>java.util.regex.Pattern</i>.
+<p>
+This semantics of this user-defined pattern
+are that it attempts to repeatedly match the regular expression
+- call it RE -
+against the  subject at the current cursor.  Thus, it is roughly similar to the
+altered regular expression "RE+", which of course would be a legal
+RE for this pattern and would negate the need for the implicit plus.
+But the point here is to demonstrate how to use the ExternalPattern mechanism.
+<p>
+The basic process is to
+define two classes: one that implements the <i>ExternalPattern</i>
+interface and one that subclasses the <i>ExternalMatcher</i> class.
+The latter can be an inner, final class within the first.
+<p>
+So, for the RE pattern, we define the following outline structure
+(error checking and such have been elided).
+<pre>
+class REPattern implements ExternalPattern
+{
+    // The ExternalPattern interface requires three methods
+    // getName, getNargs, and matcher.
+
+    public String getName() {return "RE";}
+    public int getNargs() {return 1;}
+
+    public ExternalMatcher matcher(Object[] argv) throws Error
+    {
+        java.util.regex.Pattern jpat = null;
+        jpat = java.util.regex.Pattern.compile((String)argv[0]);
+        ExternalMatcher rem = new REMatcher(jpat);
+        return rem;
+    }
+}
+</pre><p>
+The <i>matcher()</i> method is basically a factory method
+for creating <i>ExternalMatcher</i> instances.
+The reason for this is because the ExternalPattern instances
+are shared by all occurrences in a compiled pattern.
+So for each actual match of that pattern we must keep
+a separate piece of state to track the match.
+<p>
+The corresponding <i>ExternalMatcher</i>
+for <i>REPattern</i>
+is <i>REMatcher</i>
+and is defined as follows (again with elision).
+<pre>
+    final class REMatcher extends ExternalMatcher
+    {
+        // The only relevant state is the regular expression
+        java.util.regex.Pattern regexp = null;
+
+        public REMatcher(java.util.regex.Pattern jpat) {regexp = jpat;}
+
+        public boolean initial() throws Error {...}
+    
+        public boolean retry() throws Error {...}
+
+        public void fail() {jpat = null; ...}
+    }
+</pre><p>
+On initial match attempt, the <i>initial()</i> method is called.
+It returns true or false if the initial match succeeds or fails.
+When the match backtracks into this operation,
+the <i>retry()</i> method is called.
+It returns true or false if the match retry succeeds or fails.
+If it fails, then the <i>fail()</i> method is invoked to allow
+the external pattern to reclaim any allocated resources.
+<p>
+This external pattern is defined by something like this.
+<pre>
+    ExternalMap externs = new ExternalMap();
+    externs.add(new REPattern());
+</pre><p>
+Assume the invocation of the RE pattern looks something like this.
+<pre>
+    RE("[a][b]")
+</pre><p>
+The argument string <i>"[a][b]"</i> specifies the regular expression to match.
+When the matcher encounters this pattern it invokes
+<i>REPattern.matcher(&lt;regular expression string&gt;)</i>
+to obtain the <i>REMatcher</i> instance.
+<p>
+The class <i>ExternalMatcher</i>
+provides access to a set of fields that
+provide access to the current state of the overall match.
+The relevant definition is as follows.
+<pre>
+abstract public class ExternalMatcher {
+    ...
+    public String Subject;
+    public VarMap Vars;
+    public ExternalMap Externs;
+    public int Anchor;
+    public int Cursor;
+    public boolean Cancel;
+}
+</pre><p>
+The meaning of the fields is as follows.
+<li> Subject: the subject string being used in the match.
+<li> Vars: the variable map being used in the match.
+<li> Externs: the external pattern map being used in the match.
+<li> Anchor: the cursor index as it was at the beginning of the
+     call to the <i>initial()</i> method.
+<li> Cursor: the current cursor index.
+<li> Cancel: return true if the match should be completely cancelled.
+</ol>
+<p>
+The complete <i>initial()</i>
+method for <i>REMatcher</i> is defined as follows (again with elision).
+<pre>
+    // Try the initial match. We want the maximum match
+    // starting at the current cursor location.
+    public boolean initial() throws Error
+    {
+        // Get the substring to match (with some test reporting)
+        int curse = super.Cursor;
+        String target = super.Subject.substring(curse);
+        java.util.regex.Matcher m = regexp.matcher(target);
+        boolean sf = m.lookingAt(); // anchored RE match
+        if(!sf) return false; // failed                 
+        // set the new cursor
+        super.Cursor = (curse+m.end());
+        return true;
+    }
+</pre><p>
+The complete <i>retry()</i> method is defined as follows.
+<pre>
+    public boolean retry() throws Error
+    {
+        // Get the substring to match
+        int curse = super.Cursor;
+        String target = Subject.substring(curse);
+        java.util.regex.Matcher m = regexp.matcher(target);
+        boolean sf = m.lookingAt(); // anchored RE match
+        if(!sf) return false; // failed                 
+        // set the new cursor
+        super.Cursor = (curse+m.end());
+        return true;
+    }
+</pre><p>
+Test case 12 shows the example completely worked out and operational.
+
+<h2><u><a name="Compiler">The JPattern Pseudo-Compiler</a></u></h2>
+The package jpattern.compiler supports the
+compilation of string expressions into equivalent Pattern
+objects.
+It is capable of converting a string representation of a pattern
+to equivalent Java code (via a command line interface)
+or
+to a Pattern object at runtime (via an API).
+
+<h3><u><a name="CompilerMain">jpattern.compiler.Main</a></u></h2>
+The command line interface is supported by the program
+jpattern.compiler.Main.
+<h3><u>Summary:</u></h3
+<code>
+java -classpath jpattern.jar jpattern.compiler.Main <b>OPTIONS</b>
+</code>
+<h4><u>Options:</u></h4>
+<table width=0">
+<tr valign="top"><td width=200><u>Option</u></td><td><u>Description</u></td></tr>
+<tr valign="top"><td>-pat '&lt;pattern&gt;' </td><td>Specify a pattern expression.</td></tr>
+<tr valign="top"><td>-subject="&lt;string&gt;"</td><td>Specify a subject string.</td></tr>
+<tr valign="top"><td>-var "var=&lt;value&gt;"</td><td>Specify an initial variable assignment.; may be repeated.</td></tr>
+<tr valign="top"><td>-tag "&lt;string&gt;</td><td>Specify a string that identifies pattern lines in the standard input.
+The same tag is used to mark the beginning and the end of the string.</td></tr>
+<tr valign="top"><td>-xmltag "&lt;string&gt;</td><td>Specify an xml style opening tag that identifies pattern lines in the standard input.
+The closing tag is the same as the open tag, but with the standard "/".
+For example, <code>-xmltag &lt;pattern&gt</code> would mark strings with the tags
+<code>&lt;pattern&gt;...&lt;/pattern&gt;</code>.</td></tr>
+<tr valign="top"><td>-squote</td><td>Indicate that pattern expressions are using single quotes instead of the usual double quotes.</td></tr>
+<tr valign="top"><td>-debug</td><td>Turn on lowest level of debug output.</td></tr>
+<tr valign="top"><td>-debugn &lt;N&gt; </td><td>Set the debug level to N</td></tr>
+<tr valign="top"><td>-v</td><td>Print out the parameters.</td></tr>
+<tr valign="top"><td>-f &lt;filename&gt;</td><td>Take input from this file</td></tr>
+<tr valign="top"><td>-o &lt;filename&gt;</td><td>Send non-error output to this file.</td></tr>
+<tr valign="top"><td>-err &lt;filename&gt;</td><td>Send error output to this file.</td></tr>
+<tr valign="top"><td>-conflict</td><td>Avoid naming conflicts by using fully qualified names for pattern operations.</td></tr>
+</table>
+
+<h3><u>Description:</u></h3>
+<h4><u>Command Line Usage</u></h4>
+There are two primary calling forms, exemplified by the following.
+<ol>
+<li><code>java -classpath jpattern.jar jpattern.compiler.Main<br>
+-pat "arb &amp; len(5)=x" -subject "1234567" -var "x=xyz"</code>
+<p>
+<li><code>java -classpath  jpattern.jar jpattern.compiler.Main<br>
+-tag "@" &lt; javacode.pat &gt; javacode.java</code>
+<p>
+</ol>
+The first command line case performs an actual match. It compiles the "-pat"
+argument and matches it against the "-subject" string.
+It reports if the match succeeds, and if so, prints out
+the final values of all variables and the final subject line
+after replacement.
+The example above, for example would report success
+and that the final subject line was "xyz67" and the final value of x
+was "xyz".
+<p>
+The second case reads lines from
+standard input ("javacode.pat" in this case)
+and writes them to
+standard output ("javacode.java" in this case).
+As each line is read, it is searched for paired occurrences of
+the java tag string (the argument to the
+-tag flag or -xmltag flag).  The text between the occurrences is assumed to be
+a pattern expression. Multiple patterns per line is disallowed.
+That expression is compiled to equivalent Java code to construct
+the Pattern and is written to standard output in place of the tagged
+text. Patterns may span multiple lines by ending each line with
+a backslash character ("\").
+<p>
+As an alternative, it should be possible to invoke
+the compiler directly using the following command form:
+<code>java -jar jpattern.jar ...</code>
+This is because the jar file has the appropriate manifest within it.
+It should be noted, however, that java <code>-D</code> flags
+cannot be used when using the <code>-jar</code> flag.
+<p>
+To see how the compiler works,
+suppose the first example was run with the following input file.
+<pre>
+public class Test0
+{
+    static void  makePattern()
+    {
+        Pattern Lnum = @pos(0) (Digs ".") span(" ")@;
+        Pattern Digs = @span("0123456789")@;
+    }
+}
+</pre>
+It would produce the following output file.
+<pre>
+public class Test0
+{
+    static void makePattern()
+    {
+        Pattern Lnum = Pattern.Concat(
+            Pattern.Pos(0),
+            Pattern.Concat(
+                Pattern.Concat(
+                    Pattern.Defer(Variable.create("Digs")),
+                    Pattern.StringPattern(".")
+                ),
+                Pattern.Span(" ")
+            )
+        );
+        Pattern Digs = Pattern.Span("0123456789");
+    }
+}
+</pre>
+<p>
+You can examine the .pat files in the test
+directory to see other examples.
+
+<h4><u>API Usage</u></h4>
+The compiler may be invoked within a Java program to dynamically
+generate Patterns from pattern specifications.
+The Java code fragment equivalent to the first command line above would be
+as follows.
+<pre>
+// Instantiate the compiler and compile the desired pattern.
+Compiler compiler = new Compiler();
+Pattern p = compiler.compile("arb & len(5)=x");
+
+// Now create a VarMap and get a matcher from pattern p.
+VarMap vars = new VarMap();
+Match matcher = p.matcher();
+
+//Recast the matcher as a match result
+MatchResult result = (MatchResult)matcher;
+
+// Now perform the match and report the result
+String subject = "1234567";
+boolean ok = matcher.match(subject,vars);
+stdout.print(ok?"succeed: "+result.getSubject():"fail.");
+</pre>
+
+<h2><u><a name="Examples">Examples of Pattern Matching</a></u></h2>
+<b>Example 1.</b>
+This shows a simple example of the use of pattern replacement to remove
+a line number from the start of a string. We assume that the line
+number has the form of a string of decimal digits followed by a
+period, followed by one or more spaces.
+The tag delimiter for pattern specifications is "@". We will occasionally
+include the concatenation operator ("&amp;").
+<pre>
+Pattern Digs = @span("0123456789")@;
+Pattern Lnum = @pos(0) &amp; (+Digs &amp; ".")=nil &amp; span(" ")@;
+</pre><P>
+<p>
+Now to use this pattern we simply do a match with a replacement:
+<pre>
+VarMap vars = new VarMap(); vars.put("Digs",Digs); vars.put("nil","");
+boolean ok = Lnum.matcher().match(Line, vars);
+</pre><p>
+which replaces the line number by the null string.
+<p>
+The style we use here - defining constant patterns and then using
+them - is typical. It is possible to build up patterns dynamically,
+but it is usually more efficient to build them in pieces in advance
+using constant declarations. Note in particular that although it is
+possible to construct a pattern directly as an argument for the
+Match routine, it is much more efficient to preconstruct the pattern
+as we did in this example.
+<p>
+<b>Example 2.</b>
+Now let's look at the use of pattern assignment to break a
+string into sections. Suppose that the input string has two
+unsigned decimal integers, separated by spaces or a comma,
+with spaces allowed anywhere. Then we can isolate the two
+numbers with the following pattern:
+<pre>
+Pattern B = @nspan(" ")@;
+Pattern N = @span("0123456789")@;
+Pattern T = @nspan(" ") +N*Num1 span(" ,") +N*Num2@;
+</pre><p>
+<p>
+The match operation
+<pre>
+T.matcher().match(" 124, 257  ")
+</pre><p>
+would assign the string 124 to Num1 and the string 257 to Num2.
+<p>
+<b>Example 3.</b>
+Now let's see how more complex elements can be built from the
+set of primitive elements. The following pattern matches strings
+that have the syntax of Ada 95 based literals:
+<pre>
+VarMap vars = new VarMap();
+vars.put("DecDigits","0123456789");
+vars.put("HexDigits","0123456789abcdefABCDEF");
+
+Pattern Digs = @span(+DecDigits)@;
+Pattern UDigs = @+Digs arbno("_" +Digs")@;
+Pattern Hdig = @span(+HexDigits)@;
+Pattern UHdig = @+Hdig arbno("_" +Hdig)@;
+Pattern Bnum = @+UDigs "#" +UHdig "#"@;
+vars.put("Digs",Digs);
+vars.put("UDigs",UDigs);
+vars.put("Hdig",Hdigs);
+vars.put("UHdig",UHdigs);
+vars.put("Bnum",Bnum);
+</pre><p>
+A match against Bnum will now match the desired strings, e.g.
+it will match "16#123_abc#", but not "a#b#". However, this pattern
+is not quite complete, since it does not allow colons to replace
+the pound signs. The following is more complete:
+<pre>
+Pattern Bchar = @any("#:")@;
+vars.put("Bchar",Bchar);
+Pattern Bnum = @+UDigs +Bchar +UHdig +Bchar@;
+</pre><p>
+But that is still not quite right, since it allows # and : to be
+mixed, and they are supposed to be used consistently. We solve
+this by using a deferred match.
+<pre>
+Pattern Bnum  = @+UDigs Bchar*Temp UHdig +Temp@;
+</pre><p>
+Here the first instance of the base character is stored in Temp, and
+then later in the pattern we rematch the value that was assigned.
+<p>
+<b>Example 4.</b>
+For an example of a recursive pattern, let's define a pattern
+that is like the built in Bal, but the string matched is balanced
+with respect to square brackets or curly brackets.
+<p>
+The language for such strings might be defined in extended BNF as
+<pre>
+ELEMENT ::= &lt;any character other than [] or {}&gt;
+           | '[' BALANCED_STRING ']'
+           | '{' BALANCED_STRING '}'
+BALANCED_STRING ::= ELEMENT {ELEMENT}
+</pre><p>
+Here we use "{}" to indicate zero or more occurrences of a term, as
+is common practice in extended BNF. Now we can translate the above
+BNF into recursive patterns as follows:
+<pre>
+Pattern Element = @notany("[]{}") \
+                  | ("[" Balanced_String "]") \
+                  | ("{" Balanced_String "}")@;
+Pattern Balanced_String = @Element arbno(Element)@;
+
+VarMap vars = new VarMap();
+vars.put("Balanced_String",Balanced_String);
+</pre><p>
+Note the important use of + here to refer to a pattern not yet
+defined. Note also that we use assignments precisely because we
+cannot refer to as yet undeclared variables in initializations.
+<p>
+Now that this pattern is constructed, we can use it as though it
+were a new primitive pattern element. For example, the match:
+<pre>
+Pattern p = @+Balanced_String*Current_Output fail@;
+P.matcher().match("xy[ab{cd}]")
+</pre><p>
+will generate the output (assuming that <i>Current_Output</i>
+has been initialized with an instance of <i>java.util.Collection</i>).
+<pre>
+x xy xy[ab{cd}] y y[ab{cd}] [ab{cd}] a ab ab{cd} b b{cd} {cd} c cd d
+</pre><p>
+Note that the function of the fail operator here is simply to force the
+pattern Balanced_String to match all possible alternatives. Studying
+the operation of this pattern in detail is highly instructive.
+<p>
+<b>Example 5.</b>
+Finally we give a rather elaborate example of the use of deferred
+matching and the ExternalFunction mechanism.
+The following declarations build up a pattern which will
+find the longest string of decimal digits in the subject string.
+<pre>
+public class Test5b extends Test
+{
+    GTS gts = new GTS();
+...
+    public Pattern makePattern()
+    {
+        vars.put("GTS",gts);
+        vars.put("Digit","0123456789");
+        Pattern Digs = @span(+Digit)@;
+        // Note that the comments are inside the backslash
+        Pattern Find = @""*Max fence           // initialize Max to null \
+                        & breakx(+Digit)       // scan looking for digits \
+                        & ((span(+Digit)*Cur   // assign next string to Cur \
+                            & +GTS             // check size(Cur) > Size(Max) \
+                            & setcur(+Loc))    // if so, save location \
+                           * Max)              // and assign to Max. \
+                        & fail@;               // seek all alternatives
+        return Find; // top level pattern
+    }
+}
+...
+class GTS implements ExternalVariable
+{
+...
+    public Object get(VarMap vars) {
+        String Cur = vars.getString("Cur","");
+        String Max = vars.getString("Max","");
+        return Boolean.valueOf(Cur.length() > Max.length());
+    }
+    public void put(VarMap vars, Object val) {} // not used
+}
+</pre><p>
+As we see from the comments here, complex patterns like this take
+on aspects of sequential programs. In fact they are sequential
+programs with general backtracking. In this pattern, we first use
+a pattern assignment that matches null and assigns it to Max, so
+that it is initialized for the new match. Now BreakX scans to the
+next digit. Arb would do here, but BreakX will be more efficient.
+Once we have found a digit, we scan out the longest string of
+digits with Span, and assign it to Cur. The deferred call to GTS
+tests if the string we assigned to Cur is the longest so far. If
+not, then failure is signalled, and we seek alternatives (this
+means that BreakX will extend and look for the next digit string).
+If the call to GTS succeeds then the matched string is assigned
+as the largest string so far into Max and its location is saved
+in Loc. Finally Fail forces the match to fail and seek alternatives,
+so that the entire string is searched.
+<p>
+If the pattern Find is matched against a string, the variable Max
+at the end of the pattern will have the longest string of digits,
+and Loc will be the starting character location of the string. For
+example, Match("ab123cd4657ef23", Find) will assign "4657" to Max
+and 11 to Loc (indicating that Subject.substring(0,11) 
+has been matched.
+This example is taken from tests/Test5b.pat.
+
+<hr><hr>
+<h2><a name="Point of Contact">Point of Contact</a></h2>
+<table>
+<tr valign="top"><td><b>Author:</b></td><td>Dennis Heimbigner</td></tr>
+<tr valign="top"><td/><td>Software Engineering Research Laboratory</td></tr>
+<tr valign="top"><td/><td>Computer Science Department</td></tr>
+<tr valign="top"><td/><td>University of Colorado</td></tr>
+<tr valign="top"><td/><td>Boulder, Colorado 80309-0430 USA</td></tr>
+<tr valign="top"><td/><td>dennis.heimbigner@colorado.edu</td></tr>
+</table>
+
+<hr><hr>
+<h2><u><a name="License"><b>License</b></a></u></h2>
+
+The code is divided into two parts. The source code which is derived
+directly from the Ada source code is licensed under that source's
+license, which is essentially the LGPL. The compiler source code is
+licensed under the BSD license.  See the file license.txt for more more
+details.
+
+</body>
+</html>

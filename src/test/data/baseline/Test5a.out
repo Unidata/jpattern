@@ -1,0 +1,14 @@
+Example 5a
+Testclass: jpattern.test.Test5a
+Defined patterns:
+TestPattern=PC_R_Enter & PC_Rpat(+ExternalVar) & PC_Span_CH(' ') & PC_Assign_Imm(+ExternalVar) & PC_R_Enter & PC_String("after") & PC_Replace_OnM(+ExternalVar)
+match: subject="before    after" pattern=TestPattern
+extvar.get: before
+extvar.put: before->before    
+extvar.get: before    
+matchresult=MatchResult(0,15,|before    before    |)
+succeed: |^before    befor^e    |
+(non-pattern) vars after:
+----------
+ExternalVar=ExternalVar(before    )
+----------

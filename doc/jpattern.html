@@ -1,0 +1,199 @@
+<html>
+  <head>
+    <title>JPattern: Snobol4-Style Pattern Matching Primitives for Java</title>
+    <meta http-equiv="Owner" content="Dennis Heimbigner">
+    <meta http-equiv="Reply-to" content="dennis.heimbigner@colorado.edu">
+    <link rev="made" href="mailto:dennis.heimbigner@colorado.edu">
+    <base target="_top">
+  </head>
+<body>
+
+<center>
+<h1>JPattern</h1>
+<h2>Snobol4-Style Pattern Matching Primitives for Java</h2>
+</center>
+<hr>
+<table>
+<tr><td width=200>Last Updated:</td><td>01 October 2007</td></tr>
+<tr><td>Latest Version:</td><td>Jpattern 2.0</td></tr>
+<tr><td>Minimum JDK Level:</td><td>JDK 1.5</td></tr>
+</table>
+<p>
+<h3><u>Table of contents</u></h3>
+<ul>
+<li><a target="_self" href="#Introduction">Introduction</a>
+<li><a target="_self" href="#Status">Status</a>
+<li><a target="_self" href="#Download">Download</a>
+<li><a target="_self" href="#Installation">Installation</a>
+<li><a target="_self" href="#Testing">Testing</a>
+<li><a target="_self" href="#Compiler">Compiler</a>
+<li><a target="_self" href="#Changes">Change Log</a>
+<li><a target="_self" href="#Author">Point of Contact</a>
+<li><a target="_self" href="#License">License</a>
+</ul>
+</p>
+<h2><u><a name="Introduction"><b>Introduction</b></a></u></h2>
+
+Most current programming languages provide some form of
+pattern matching. As a rule, the pattern matching is
+based on regular expressions. The Comit/Snobol3/Snobol4/Spitbol
+programming languages have provided pattern matching but
+based on a pattern matching paradigm that is strictly more
+powerful than standard regular expressions.
+<p>
+The goal of this project is to make Snobol4-style pattern matching
+available as a package for the Java programming language.
+Rather than build such a package from scratch,
+Rober Dewar's
+existing
+<a href="http://gcc.gnu.org/onlinedocs/gcc-3.3.6/gnat_rm/The-GNAT-Library.html#The-GNAT-Library">Ada-based Gnat Spitbol Patterns code</a>
+was converted to Java.
+The result is generally consistent with that Ada package, although
+some changes were made to conform to the capabilities and
+limitations of the Java language. In light of the derived nature of this code,
+the original GNAT license is assumed to cover this code.
+The compiler, however is licensed under a BSD license.
+See the <a target="_self" href="#License">License Section</a>
+for more details.
+
+<h2><u><a name="Status"><b>Status</b></a></u></h2>
+This software should be considered to be in late Alpha stage.
+Testing has been spotty at best.
+While the author is not currently using this software,
+he is supporting it, and bug fixes and extensions are welcome.
+
+<h2><a name="Download"><b>Download</b></a></h2>
+Refer to 
+<a href="http://www.cs.colorado.edu/~dennis/software">
+http://www.cs.colorado.edu/~dennis/software
+for download information.
+<p>
+In addition, earlier versions may also be available through that page.
+<p>
+Note that the <code>jpattern-x.x.jar</code> file is not itself executable
+by java. It must be downloaded and extracted. An executable jar file
+(also named <i>jpattern.jar</i>)
+is included in the set of extracted files.
+<p>
+<h3>Dependencies</h3>
+<ul>
+<li> Java -- This interpreter uses features of Java 1.5.
+</ul>
+
+<h2><u><a name="Installation"><b>Installation</b></a></u></h2>
+The distribution contains both an ant build.xml file
+and a Makefile. Both have the following major tasks defined.
+<ul>
+<li><i>all</i>: Compile the source and construct the jar file
+called <code>jpattern.jar</code>.
+It is assumed that the JDK 1.5 bin directory
+is in the PATH environment variable.
+<p><li><i>clean</i>: Delete the .class files, the jar file,
+and the manifest file.
+</ul>
+The final product is the jar file called <code>jpattern.jar</code>.
+For convenience, a version of that jar file is included. It has been
+compiled with jdk1.5.
+
+<h2><u><a name="Testing"><b>Testing</b></a></u></h2>
+<p>
+A set of tests is provided in the directory name <code>tests</code>.
+A make Makefile and an ant build.xml file are both provided.
+<p>
+The output of the tests is captured and compared to the expected output.
+Any discrepancies are reported. 
+<p>
+The set of tests is rather sketchy; it is derived from various examples
+from online, from the snobol4 book, and from bug reports. If anyone knows
+of a more comprehensive set of pattern tests, please contact the
+<a target="_self" href="#Point of Contact">author</a>.
+<hr><hr>
+
+<h2><u><a name="Compiler">The JPattern Pseudo-Compiler</a></u></h2>
+The package jpattern.compiler supports the
+compilation of string expressions into equivalent Pattern
+objects.
+It is capable of converting a string representation of a pattern
+to equivalent Java code (via a command line interface)
+or
+to a Pattern object at runtime (via an API).
+Refer to the reference manual for more details.
+
+<hr><hr> <h2><a name="Changes"><b>Change Log</b></a></h2>
+
+<h2><a name="changesv1"><b>Changes Incorporated into Version 1</b></a></h2>
+<p>
+Minor version levels are indicated in parentheses.
+<ul>
+<li> (0) This is the initial release
+<p>
+<li> (1) Modified the licensing to conform to Robert Dewar's request.
+<li> (1) Changed the -java flag to be -tag.
+<li> (1) Added  the -xmltag flag.
+<p>
+<li> (2) Added a manifest to jpattern.jar so it can be used in compiler mode.
+<li> (2) Modified the distribution to include a pre-compiled jpattern.jar.
+</ul>
+<p>
+<h2><a name="changesv2"><b>Changes Incorporated into Version 2</b></a></h2>
+<p>
+Minor version levels are indicated in parentheses.
+<ul>
+<li> (0) Fixed a number of foolish errors, some introduced in version 1.2
+(Thanks to Arjan Loeffen of Valid/Vision.). These include:
+	<ul>
+	<li> The pattern fence(arb &amp; "b") &amp; "c"
+		matched against subject "b" throws
+		java.lang.ArrayIndexOutOfBoundsException: -2147483647 , while
+		fence(arb &amp; "b") doesn't. 
+	<li> The pattern len(1) fails on subject "a".
+	<li> The pattern "a" ** MATCH on subject "a"
+	     throws java.lang.ArrayIndexOutOfBoundsException: -2147483647.
+	<li> The pattern bal("()") doesn't seem to work, while bal does.
+	</ul>
+<li> (0) Modified the test set files to all extend Test.java to handle
+         the common code.
+<li> (0) Did some significant refactoring.
+<li> (0) Fixed errors in ParseArgs.java that did not handle missing
+         arguments correctly.
+<li> (0) Added backquote strings to pass through Java expressions
+         for use during pattern construction.
+<li> (0) Replaced the Function mechanism with a somewhat more general
+         ExternalVariable mechanism.
+<li> (0) Added an ExternalPattern mechanism to support user defined
+         pattern objects in matching.
+<li> (0) Divided doc/jpattern.html into jpattern.html and refman.html.
+<li> (0) The structure of the classes and their use has been
+         modified to look more like the java.util.regex structure.
+<li> (0) The test cases have been moved from package <i>jpattern.test</i>
+         to <i>test</i> so that they do not have implicit access
+         to the jpattern package, thus being able to expose access errors.
+</ul>
+<p>
+
+<hr><hr>
+<h2><a name="Point of Contact">Point of Contact</a></h2>
+<table>
+<tr valign="top"><td><b>Author:</b></td><td>Dennis Heimbigner</td></tr>
+<tr valign="top"><td/><td>Software Engineering Research Laboratory</td></tr>
+<tr valign="top"><td/><td>Computer Science Department</td></tr>
+<tr valign="top"><td/><td>University of Colorado</td></tr>
+<tr valign="top"><td/><td>Boulder, Colorado 80309-0430 USA</td></tr>
+<tr valign="top"><td/><td>dennis.heimbigner@colorado.edu</td></tr>
+</table>
+
+
+<hr><hr>
+<h2><u><a name="License"><b>License</b></a></u></h2>
+
+The code is divided into two parts. The source code which is derived
+directly from the Ada source code is licensed under that source's
+license, which is essentially the LGPL. The compiler source code is
+licensed under the BSD license.  See the file license.txt for more more
+details.
+
+</body>
+</html>
+
+
+

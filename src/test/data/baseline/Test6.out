@@ -1,0 +1,9 @@
+Example 6
+Testclass: jpattern.test.Test6
+Defined patterns:
+TestPattern=PC_R_Enter & (PC_Arb_X |= (PC_Arb_Y(0))) & PC_Char('b') & PC_Fence_X & PC_Char('c')
+match: subject="b" pattern=TestPattern
+fail.
+(non-pattern) vars after:
+----------
+----------

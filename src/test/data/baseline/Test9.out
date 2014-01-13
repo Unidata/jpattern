@@ -1,0 +1,9 @@
+Example 9
+Testclass: jpattern.test.Test9
+Defined patterns:
+TestPattern=PC_Tab_N(2)
+match: subject="a" pattern=TestPattern
+fail.
+(non-pattern) vars after:
+----------
+----------

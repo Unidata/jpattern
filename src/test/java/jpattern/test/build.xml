@@ -1,0 +1,283 @@
+<?xml version="1.0"?>
+<project name="test" default="all" basedir=".">
+
+<property name="RELTOPDIR" value="../../../../.."/>
+<property name="TOPDIR" location="${RELTOPDIR}"/>
+
+<taskdef name="foreach"
+         classname="net.sf.antcontrib.logic.ForEach"
+	 classpath="${TOPDIR}/foreach/foreach.jar"/>
+
+<property name="DEBUG" value="-debugn 3"/>
+<property name="COMPDEBUG" value="-debugn 1"/>
+
+<property name="BUGTEST" value="Test5b"/>
+<property name="BUGDATA" value="'ab123cd4657ef23'"/>
+
+<!-- Path properties -->
+<property name="TESTDATADIR" value="${TOPDIR}/src/test/data"/>
+<property name="BASELINE" value="${TESTDATADIR}/baseline"/>
+<property name="BUILDDIR" value="./build"/>
+<property name="CLASSDIR" value="${BUILDDIR}/classes"/>
+<property name="PATTERNDIR" value="./patterns"/>
+
+<property name="JPATTERNJAR" value="${TOPDIR}/jpattern.jar"/>
+
+<!-- keep consistent with the macro invocations below -->
+<property name="TESTNUMBERS"
+value="1 2a 2b 3a1 3a2 3a3 3b 3c1 3c2 4 5a 5b 5c 6 7 8a 8b 9 10a 10b 11 12 "
+/>
+
+<!--
+<property name="TESTS" value="
+Test1
+Test2a
+Test2b
+Test3a1
+Test3a2
+Test3a3
+Test3b
+Test3c1
+Test3c2
+Test4
+Test5a
+Test5b
+Test5c
+Test6
+Test7
+Test8a
+Test8b
+Test9
+Test10a
+Test10b
+Test11
+Test12
+-->
+
+<property name="DATA1" value="'41234.  '"/>
+<property name="DATA2a" value="'124, 257'"/>
+<property name="DATA2b" value="'  456 004  '"/>
+<property name="DATA3a1" value="'16#123_abc#'"/>
+<property name="DATA3a2" value="'a#b#'"/>
+<property name="DATA3a3" value="'16#123_abc#'"/>
+<property name="DATA3b" value="'16:123_abc#'"/>
+<property name="DATA3c1" value="'16:123_abc:'"/>
+<property name="DATA3c2" value="'16:123_abc#'"/>
+<property name="DATA4" value="'xy[ab{cd}]'"/>
+<property name="DATA5a" value="'before    after'"/>
+<property name="DATA5b" value="'ab123cd4657ef23'"/>
+<property name="DATA5c" value="'before    after'"/>
+<property name="DATA6" value="'b'"/>
+<property name="DATA7" value="'a'"/>
+<property name="DATA8a" value="'a'"/>
+<property name="DATA8b" value="'a'"/>
+<property name="DATA9" value="'a'"/>
+<property name="DATA10a" value="'abcabc'"/>
+<property name="DATA10b" value="'abcabc'"/>
+<property name="DATA11" value="'()(()())'"/>
+<property name="DATA12" value="'ababc'"/>
+
+<property name="DRIVERSRC" value="Driver.java Test.java PatternBuilder.java"/>
+
+<!-- Define the tag for pattern substitutions in the test files -->
+<property name="TAG" value="@"/>
+<!-- Define if using single (-squote) or double quotes (-dquote) (default) -->
+<property name="QUOTE" value="-dquote"/>
+
+<property name="COMPMAIN" value="jpattern.compiler.Main"/>
+<property name="TESTMAIN" value="jpattern.test.Driver"/>
+
+<!-- BUILD TASKS  -->
+
+<target name="all" depends="compile,test,report"/>
+
+<target name="setup">
+    <mkdir dir="./build"/>
+    <mkdir dir="${CLASSDIR}"/>
+    <echo file="${BUILDDIR}/empty" message=""/>
+</target>
+
+<!--
+<target name="testjar" depends="compile">
+    <copy file="${JPATTERNJAR}" tofile="./${TESTJAR}"/>
+    <jar update="true" destfile="${TESTJAR}" basedir="${CLASSDIR}"/>
+</target>
+-->
+
+<target name="clean">
+    <echo message="cleaning..."/>
+    <delete includeemptydirs="true" failonerror="false">
+	<fileset dir="${BUILDDIR}"/>
+    </delete>
+</target>
+<!--
+        <fileset file="Test?*.class"/>
+        <fileset file="Test?*.diff"/>
+	<fileset file="./${TESTJAR}"/>
+	<fileset dir="${CLASSDIR}"/>
+        <fileset file="success"/>
+        <fileset file="fail"/>
+        <fileset file="empty"/>
+-->
+
+<target name="compile" depends="setup,generate">
+    <echo message="compiling drivers..."/>
+    <javac includeantruntime="false"
+           classpath="${CLASSDIR}:${JPATTERNJAR}"
+           destdir="${CLASSDIR}"
+           srcdir="."
+           includes="${DRIVERSRC}"/>
+    <echo message="compiling tests..."/>
+    <javac includeantruntime="false"
+           classpath="${CLASSDIR}:${JPATTERNJAR}"
+           destdir="${CLASSDIR}"
+           srcdir="${BUILDDIR}"
+           includes="Test*.java"/>
+</target>
+
+<target name="generate1">
+    <!-- translate .pat to .java -->
+    <java fork="true"
+	  classpath="${CLASSDIR}:${JPATTERNJAR}"
+	  classname="${COMPMAIN}"
+          input="${PATTERNDIR}/Test${NUMBER}.pat"
+          output="${BUILDDIR}/Test${NUMBER}.java">
+          <arg line="-tag ${TAG} ${QUOTE}"/>
+    </java>
+</target>
+
+<target name="generate" depends="setup">
+    <echo message="generating..."/>
+    <foreach list="${TESTNUMBERS}" delimiter=" "
+             target="generate1" param="NUMBER"
+             inheritall="true" trim="true" />
+</target>
+
+
+<!--	<gen TEST="Test2a"/>
+<target name="generate">
+    <echo message="generating..."/>
+	<gen TEST="Test1"/>
+	<gen TEST="Test2b"/>
+	<gen TEST="Test3a1"/>
+	<gen TEST="Test3a2"/>
+	<gen TEST="Test3a3"/>
+	<gen TEST="Test3b"/>
+	<gen TEST="Test3c1"/>
+	<gen TEST="Test3c2"/>
+	<gen TEST="Test4"/>
+	<gen TEST="Test5a"/>
+	<gen TEST="Test5b"/>
+	<gen TEST="Test5c"/>
+	<gen TEST="Test6"/>
+	<gen TEST="Test7"/>
+	<gen TEST="Test8a"/>
+	<gen TEST="Test8b"/>
+	<gen TEST="Test9"/>
+	<gen TEST="Test10a"/>
+	<gen TEST="Test10b"/>
+	<gen TEST="Test11"/>
+	<gen TEST="Test12"/>
+</target>
+-->
+
+<macrodef name="deref">
+  <attribute name="name"/>
+  <attribute name="value"/>
+  <sequential>
+    <property name="@{name}" value="${@{value}}"/>
+  </sequential>
+</macrodef>
+
+<macrodef name="run">
+    <attribute name="NUMBER"/>
+    <attribute name="ARGS"/>
+    <sequential>
+    <!-- run the test -->
+    <java fork="true"
+          classpath="${CLASSDIR}:${JPATTERNJAR}"
+          classname="${TESTMAIN}"
+	  output="${BUILDDIR}/@{TEST}.out">
+          <arg line="-test @{TEST} @{ARGS}"/>
+    </java>
+    <!-- check the test output-->
+    <exec executable="diff"
+	  resultproperty="status"
+	  failonerror="false"
+	  output="${BUILDDIR}/@{TEST}.diff">
+	<arg line="-wB ${BASELINE}/@{TEST}.out ${BUILDDIR}/@{TEST}.out"/>
+    </exec>
+    </sequential>
+</macrodef>
+
+<target name="run1">
+   <deref name="DATA" value="DATA${NUMBER}"/>
+   <property name="TEST" value="Test${NUMBER}"/>
+   <!-- run the test -->
+    <java fork="true"
+          classpath="${CLASSDIR}:${JPATTERNJAR}"
+          classname="${TESTMAIN}"
+	  output="${BUILDDIR}/${TEST}.out">
+          <arg line="-test ${TEST} -subject ${DATA}"/>
+    </java>
+    <!-- check the test output-->
+    <exec executable="diff"
+	  resultproperty="status"
+	  failonerror="false"
+	  output="${BUILDDIR}/${TEST}.diff">
+	<arg line="-wB ${BASELINE}/${TEST}.out ${BUILDDIR}/${TEST}.out"/>
+    </exec>
+</target>
+<!--
+   <run TEST="Test${NUMBER}" ARGS="-subject ${DATA}"/>
+-->
+
+<target name="test">
+    <foreach list="${TESTNUMBERS}" delimiter=" "
+             target="run1" param="NUMBER"
+             inheritall="true" trim="true" />
+</target>
+<!--
+	<run TEST="Test1" ARGS="-subject ${DATA1}"/>
+	<run TEST="Test2a" ARGS="-subject ${DATA2a}"/>
+	<run TEST="Test2b" ARGS="-subject ${DATA2b}"/>
+	<run TEST="Test3a1" ARGS="-subject ${DATA3a1}"/>
+	<run TEST="Test3a2" ARGS="-subject ${DATA3a2}"/>
+	<run TEST="Test3a3" ARGS="-subject ${DATA3a3}"/>
+	<run TEST="Test3b" ARGS="-subject ${DATA3b}"/>
+	<run TEST="Test3c1" ARGS="-subject ${DATA3c1}"/>
+	<run TEST="Test3c2" ARGS="-subject ${DATA3c2}"/>
+	<run TEST="Test4" ARGS="-subject ${DATA4}"/>
+	<run TEST="Test5a" ARGS="-subject ${DATA5a}"/>
+	<run TEST="Test5b" ARGS="-subject ${DATA5b}"/>
+	<run TEST="Test5c" ARGS="-subject ${DATA5c}"/>
+	<run TEST="Test6" ARGS="-subject ${DATA6}"/>
+	<run TEST="Test7" ARGS="-subject ${DATA7}"/>
+	<run TEST="Test8a" ARGS="-subject ${DATA8a}"/>
+	<run TEST="Test8b" ARGS="-subject ${DATA8b}"/>
+	<run TEST="Test9" ARGS="-subject ${DATA9}"/>
+	<run TEST="Test10a" ARGS="-subject ${DATA10a}"/>
+	<run TEST="Test10b" ARGS="-subject ${DATA10b}"/>
+	<run TEST="Test11" ARGS="-subject ${DATA11}"/>
+	<run TEST="Test12" ARGS="-subject ${DATA12}"/>
+-->
+
+<target name="report1">
+    <basename file="${DIFF}" property="BASENAME" suffix=".diff"/>
+    <echo message="Failed: ${BASENAME}"/>
+</target>
+
+<target name="report">
+    <foreach target="report1" param="DIFF"
+             inheritall="true" trim="true" >
+        <path id="base.path">
+          <fileset dir="${BUILDDIR}" includes="Test*.diff">
+	           <not><size value="0"/></not>
+          </fileset>
+        </path>
+    </foreach>
+</target>
+
+
+</project>
+

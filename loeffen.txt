@@ -1,0 +1,455 @@
+Subject:
+Jpattern
+From:
+Arjan Loeffen <arjan.loeffen@validvision.com>
+Date:
+Thu, 13 Sep 2007 15:05:18 +0200 (CEST)
+To:
+<dennis.heimbigner@colorado.edu>
+CC:
+Mark Emmer <marke@snobol4.com>
+
+"
+Dear Dennis,
+
+I was very happy to find your Jpattern contribution on the web:
+http://serl.cs.colorado.edu/~dennis/software/jpattern.html
+
+You seem to provide a solution to a challenge we have had for some time. This is the situation:
+
+We have developed a "publishing engine" in java, where many parts of the process are recorded as XSLT stylesheets. Within these stylesheets we provide access to "extension functions", that are actually methods in java (Xalan) classes.
+
+We have decided that we want to express all "configurable" stuff using XML/XSLT, and use java code only for particular functionalities that cannot be fully expressed by XML.
+
+You can take a look at the application http://search.iisg.nl/search/search?action=transform&xsl=home.xsl&lang=en
+
+which should give you an impression of what's going on. As you can see, all pages are XSLT based; and as you take a look at the contents of the detail pages after search, XML is the language of choice for representing the 1.5 million entries in this archive.
+
+Now the challenge is that the data itself is not alway "clean". The systems that provide the contents are different by nature, and within one database or file system different methods may have been applied for recording information. This would fall under "garbage in garbage out". This, however, is not acceptable anymore. We should strive toward "garbage in quality out". But we generally don't know how to do that.
+
+Here's where Jpattern comes in.
+
+We now think that when we import data from files or database (and transform it into XML, because that's step 1 in our import process) we filter this information and *alter and validate* it such that the information what actually arrives at the Lucene index (which is at the heart) is what we want to present in the web environment.
+
+The information that is passed can be matched against a pattern, but this match should include (at least):
+
+    *powerfull matching with backtracking
+    *inline alteration of the pattern
+    *inline java method calls
+
+Regexps will not suffice: we haven't found any implementation/dialect of regexp that allows us to affect the match by evaluating a java method at match time.
+
+We have the distinct impression that your Jpattern will allow us to do just that. Allow us to create some methods that compile standard extensions such as dictionary lookup; web access for checking validity of some embedded email address; or complex (re)computing of subpatterns. These extension functions can be called from within XSLT passing Nodelists or Strings or Jpatterns or whatever. That could in our opinion become a very powerfull string validation option, which would give out product a competitive edge.
+
+So, why this mail?
+
+We'd like to know
+
+   1. If the approach is valid as far as the possible use of Jpattern is concerned.
+   2. If this approach is familiar to you, where you have seen it applied and did it work or not?
+   3. What the state of maturity is of the Jpattern software, and if we may use it for our purposes.
+   4. What we should be careful about, tip/strack/pitfalls.
+   5. If we may contact you if needed in the future on this issue?
+
+I have CC's this mail to Mark Emmer, who maintains SPITBOL386. I know Mark from way back, and he still lives in Boulder, as far as I remember.... he may find this mail interesting.
+
+Thanks again for providing Jpattern.
+
+Arjan
+Subject:
+Two other JPattern issues
+From:
+Arjan Loeffen <arjan.loeffen@validvision.com>
+Date:
+Fri, 14 Sep 2007 19:26:52 +0200 (CEST)
+To:
+Dennis Mark Heimbigner <Dennis.Heimbigner@Colorado.EDU>
+
+"
+
+Dennis,
+
+I found these two other issues; please tell me if I'm irritating you by these mails.
+bal(String parens) doesn't seem to work; while bal
+	does. I tried breakx("(") & bal("()")
+	in anchored mode. I'd be very interested in bal(String parens)
+	though this is not part of the original snobol language...
+the pattern fence(arb & "b") & "c"
+	matched against subject "b" throws
+	java.lang.ArrayIndexOutOfBoundsException: -2147483647 , while
+	fence(arb & "b") doesn't. 
+	
+
+arjan
+
+ 
+ 
+Arjan Loeffen 
+Information Architect 
+
+Tel.: (++31) (0) 6 - 129 189 97
+
+arjan.loeffen@validvision.com
+
+Valid/Vision
+Oudezijds voorburgwal 322
+1012GM Amsterdam
++31 (0)20-4207457
+ 
+E-mail: info@validvision.com
+Internet: http://www.validvision.com/
+
+Dit emailbericht is slechts bestemd voor de persoon of organisatie aan wie het is gericht. Het bericht kan informatie bevatten die persoonlijk of vertrouwelijk is. Voor het geval de ontvanger van dit bericht niet de bedoelde persoon of organisatie is, wordt hierbij vermeld, dat verdere verspreiding, openbaarmaking of vermenigvuldiging van dit bericht strikt verboden is en verzoeken wij u de inhoud niet te gebruiken en de afzender direct per mail/fax te informeren. Dankvoor uw medewerking.
+
+The information contained in this message may be confidential and is intended to be exclusively for the addressee. Should you receive this message unintentionally, please do not use the contents herein and notify the sender immediately by return mail/fax.. Thanks for your cooperation
+Subject:
+Re: Jpattern
+From:
+Arjan Loeffen <arjan.loeffen@validvision.com>
+Date:
+Fri, 14 Sep 2007 15:29:35 +0200 (CEST)
+To:
+Dennis Mark Heimbigner <Dennis.Heimbigner@Colorado.EDU>
+
+Dennis,
+Thanks for your fast reply. I have two questions right now:
+
+1. pattern len(1) fails on subject "a"; why is that?
+
+2. pattern "a" ** MATCH on subject "a" throws java.lang.ArrayIndexOutOfBoundsException: -2147483647. Any ideas?
+
+Arjan
+
+-------------------------
+Original Message:
+From: Dennis Mark Heimbigner <Dennis.Heimbigner@Colorado.EDU>
+To: arjan.loeffen@validvision.com
+Cc: 
+Date: Thursday, September 13 2007 09:56 PM
+Subject: Re: Jpattern
+
+
+Arjan- I have interspersed my answers across you questions.
+
+ >
+ > We'd like to know
+ >
+ > 1. If the approach is valid as far as the possible use of
+ > Jpattern is concerned.
+Yes this should work.
+
+ > 2. If this approach is familiar to you, where you have seen
+ > it applied and did it work or not?
+No, I have not seen it before (other than the simple examples
+in the jpattern tests).
+
+ > 3. What the state of maturity is of the Jpattern software,
+ > and if we may use it for our purposes.
+I would call it late alpha stage.  The original purpose for which
+I built it is no longer being used, so I have not looked at it in
+a while.
+
+ > 4. What we should be careful about, tip/strack/pitfalls.
+The only problem you might have is to get the necessary
+parameters to the functions.
+
+ > 5. If we may contact you if needed in the future on this issue?
+Yes.
+
+=================================================="
+
+Dennis,
+
+what do you think about adding a function setvar(Var,Val)
+where Val can be any supported type, and Var is a variable
+name. If you allow this, and match NULL (so the cursor is
+not affected), you add serious power to the language, as we
+can create our own functions Val within java that operate on
+a fixed set of variables assigned eitehr in pattern match,
+or by a separate setvar call within this or another pattern.
+Is this major rework or relatively easy to do?
+
+Thanks,
+arjan
+
+
+ 
+ 
+Arjan Loeffen 
+Information Architect 
+
+Tel.: (++31) (0) 6 - 129 189 97
+
+arjan.loeffen@validvision.com
+
+Valid/Vision
+Oudezijds voorburgwal 322
+1012GM Amsterdam
++31 (0)20-4207457
+ 
+E-mail: info@validvision.com
+Internet: http://www.validvision.com/
+
+Dit emailbericht is slechts bestemd voor de persoon of organisatie aan wie het is gericht. Het bericht kan informatie bevatten die persoonlijk of vertrouwelijk is. Voor het geval de ontvanger van dit bericht niet de bedoelde persoon of organisatie is, wordt hierbij vermeld, dat verdere verspreiding, openbaarmaking of vermenigvuldiging van dit bericht strikt verboden is en verzoeken wij u de inhoud niet te gebruiken en de afzender direct per mail/fax te informeren. Dankvoor uw medewerking.
+
+The information contained in this message may be confidential and is intended to be exclusively for the addressee. Should you receive this message unintentionally, please do not use the contents herein and notify the sender immediately by return mail/fax.. Thanks for your cooperation
+--------------------------------------------------
+"
+Dennis,
+
+I tried to recode the existing methods for XSLT extension functions to suit your new approach.
+I have a method as follows.
+
+public static boolean matchJPattern(String subject, Pattern p, VarMap vars) throws TransformerException {
+            try	{    
+            } catch (java.lang.Error e) {
+        	        throw new TransformerException("Error in JPattern match: " + e);
+            }
+    }; 
+
+I tried this on the following parameters passed:
+subject: "abc" 
+
+p: jpattern.PE
+content of p: (PC_String{"Pattern.StringPattern(\"a\")"}) 
+
+vars is empty.
+
+
+This match fails.
+
+Can you see what is happening here?
+I do not yet use external variables.
+arjan
+
+Arjan Loeffen 
+Information Architect 
+
+Tel.: (++31) (0) 6 - 129 189 97
+
+
+arjan.loeffen@validvision.com
+
+Valid/Vision
+Oudezijds voorburgwal 322
+1012GM Amsterdam
++31 (0)20-4207457
+
+E-mail: info@validvision.com
+Internet: http://
+Dit">www.validvision.com/
+
+Dit emailbericht is slechts bestemd voor de persoon of organisatie aan wie het is gericht. Het bericht kan informatie bevatten die persoonlijk of vertrouwelijk is. Voor het geval de ontvanger van dit bericht niet de bedoelde persoon of organisatie is, wordt hierbij vermeld, dat verdere verspreiding, openbaarmaking of vermenigvuldiging van dit bericht strikt verboden is en verzoeken wij u de inhoud niet te gebruiken en de afzender direct per mail/fax te informeren. Dankvoor uw medewerking.
+
+The information contained in this message may be confidential and is intended to be exclusively for the addressee. Should you receive this message unintentionally, please do not use the contents herein and notify the sender immediately by return mail/fax.. Thanks for your cooperation
+
+-------------------------
+Original Message:
+From: Dennis Mark Heimbigner 
+To: arjan.loeffen@validvision.com
+Cc: 
+Date: Friday, September 28 2007 12:51 AM
+Subject: Re: jpattern update
+Ok, I have released the first instance of jpattern version 2.0 (attached).
+I did not exactly implement setvar.  You should look
+at the discussion of "Communication with Java" in the reference
+manual to see if what I built works for you.
+
+=Dennis Heimbigner
+
+Arjan Loeffen wrote:
+> > Great;
+> > I will send you materiaal I have developed on the JPattern software as soon as it is "showable", which I expect it to be this weekend. 
+> > arjan
+> > 
+> > Arjan Loeffen 
+> > Information Architect 
+> > 
+> > Tel.: (++31) (0) 6 - 129 189 97
+> > 
+> > 
+> > arjan.loeffen@validvision.com
+> > 
+> > Valid/Vision
+> > Oudezijds voorburgwal 322
+> > 1012GM Amsterdam
+> > +31 (0)20-4207457
+> >  
+> > E-mail: info@validvision.com
+> > Internet: http://>">www.validvision.com/
+> >
+> > Dit emailbericht is slechts bestemd voor de persoon of organisatie aan wie het is gericht. Het bericht kan informatie bevatten die persoonlijk of vertrouwelijk is. Voor het geval de ontvanger van dit bericht niet de bedoelde persoon of organisatie is, wordt hierbij vermeld, dat verdere verspreiding, openbaarmaking of vermenigvuldiging van dit bericht strikt verboden is en verzoeken wij u de inhoud niet te gebruiken en de afzender direct per mail/fax te informeren. Dankvoor uw medewerking.
+> > 
+> > The information contained in this message may be confidential and is intended to be exclusively for the addressee. Should you receive this message unintentionally, please do not use the contents herein and notify the sender immediately by return mail/fax.. Thanks for your cooperation
+> > 
+> > -------------------------
+> > Original Message:
+> > From: Dennis Mark Heimbigner 
+> > To: arjan.loeffen@validvision.com
+> > Cc: 
+> > Date: Tuesday, September 25 2007 11:31 PM
+> > Subject: jpattern update
+> > I have been working on a revised version to not only
+> > fix bugs, but to address the setvar issue.
+> > I decided that the setvar idea was somewhat ill-defined,
+> > so I designed an alternate mechanism.
+> > I hope to have it available in a couple of days.
+> > 
+> > =Dennis Heimbigner
+==================================================
+"
+
+To be more precise, I have implemented your sample code as follows, altered --as far as I understand-- according to the new java code you provided:
+
+            Compiler compiler = new Compiler();
+            Pattern p = Pattern.Java(compiler.compileJ("arb & len(5)=x"));
+
+    //         Now create a VarMap and get a matcher from pattern p.
+            VarMap vars = new VarMap();
+            Matcher matcher = p.matcher();
+
+    //        Recast the matcher as a match result
+            MatchResult result = (MatchResult)matcher;
+
+    //         Now perform the match and report the result
+            String subject = "1234567";
+            matcher.setSubject(subject);
+            matcher.setVarMap(vars);
+            boolean ok = matcher.match();
+            System.out.print(ok?"succeed: "+result.getSubject():"fail.");
+            return result.getSubject();
+
+This pattern match fails. ("Fail."). Please tell me what I'm doing wrong...
+arjan
+
+----- Original Message -----
+From: Arjan  Loeffen <arjan.loeffen@validvision.com>
+To: Dennis Mark Heimbigner <Dennis.Heimbigner@Colorado.EDU>
+Cc:
+Date: Friday, September 28 2007 10:28 PM
+Subject: Re: jpattern update
+
+
+
+
+
+
+Dennis,
+
+I tried to recode the existing methods for XSLT extension functions to suit your new approach.
+I have a method as follows.
+
+public static boolean matchJPattern(String subject, Pattern p, VarMap vars) throws TransformerException {
+            try	{    
+        Matcher matcher = p.matcher();
+        	        matcher.setAnchorMode(true);
+        	        matcher.setVarMap(vars);
+        	        matcher.setSubject(subject);
+        	        return matcher.match();
+            } catch (java.lang.Error e) {
+        	        throw new TransformerException("Error in JPattern match: " + e);
+            }
+    }; 
+
+I tried this on the following parameters passed:
+subject: "abc" 
+
+p: jpattern.PE
+content of p: (PC_String{"Pattern.StringPattern(\"a\")"}) 
+
+vars is empty.
+
+
+This match fails.
+
+Can you see what is happening here?
+I do not yet use external variables.
+arjan
+
+Arjan Loeffen 
+Information Architect 
+
+Tel.: (++31) (0) 6 - 129 189 97
+
+
+arjan.loeffen@validvision.com
+
+Valid/Vision
+Oudezijds voorburgwal 322
+1012GM Amsterdam
++31 (0)20-4207457
+
+E-mail: info@validvision.com
+Internet: http://
+Dit">www.validvision.com/
+
+Dit emailbericht is slechts bestemd voor de persoon of organisatie aan wie het is gericht. Het bericht kan informatie bevatten die persoonlijk of vertrouwelijk is. Voor het geval de ontvanger van dit bericht niet de bedoelde persoon of organisatie is, wordt hierbij vermeld, dat verdere verspreiding, openbaarmaking of vermenigvuldiging van dit bericht strikt verboden is en verzoeken wij u de inhoud niet te gebruiken en de afzender direct per mail/fax te informeren. Dankvoor uw medewerking.
+
+The information contained in this message may be confidential and is intended to be exclusively for the addressee. Should you receive this message unintentionally, please do not use the contents herein and notify the sender immediately by return mail/fax.. Thanks for your cooperation
+
+-------------------------
+Original Message:
+From: Dennis Mark Heimbigner 
+To: arjan.loeffen@validvision.com
+Cc: 
+Date: Friday, September 28 2007 12:51 AM
+Subject: Re: jpattern update
+Ok, I have released the first instance of jpattern version 2.0 (attached).
+I did not exactly implement setvar.  You should look
+at the discussion of "Communication with Java" in the reference
+manual to see if what I built works for you.
+
+=Dennis Heimbigner
+
+Arjan Loeffen wrote:
+> > Great;
+> > I will send you materiaal I have developed on the JPattern software as soon as it is "showable", which I expect it to be this weekend. 
+> > arjan
+> > 
+> > Arjan Loeffen 
+> > Information Architect 
+> > 
+> > Tel.: (++31) (0) 6 - 129 189 97
+> > 
+> > 
+> > arjan.loeffen@validvision.com
+> > 
+> > Valid/Vision
+> > Oudezijds voorburgwal 322
+> > 1012GM Amsterdam
+> > +31 (0)20-4207457
+> >  
+> > E-mail: info@validvision.com
+> > Internet: http://>">www.validvision.com/
+> >
+> > Dit emailbericht is slechts bestemd voor de persoon of organisatie aan wie het is gericht. Het bericht kan informatie bevatten die persoonlijk of vertrouwelijk is. Voor het geval de ontvanger van dit bericht niet de bedoelde persoon of organisatie is, wordt hierbij vermeld, dat verdere verspreiding, openbaarmaking of vermenigvuldiging van dit bericht strikt verboden is en verzoeken wij u de inhoud niet te gebruiken en de afzender direct per mail/fax te informeren. Dankvoor uw medewerking.
+> > 
+> > The information contained in this message may be confidential and is intended to be exclusively for the addressee. Should you receive this message unintentionally, please do not use the contents herein and notify the sender immediately by return mail/fax.. Thanks for your cooperation
+> > 
+> > -------------------------
+> > Original Message:
+> > From: Dennis Mark Heimbigner 
+> > To: arjan.loeffen@validvision.com
+> > Cc: 
+> > Date: Tuesday, September 25 2007 11:31 PM
+> > Subject: jpattern update
+> > I have been working on a revised version to not only
+> > fix bugs, but to address the setvar issue.
+> > I decided that the setvar idea was somewhat ill-defined,
+> > so I designed an alternate mechanism.
+> > I hope to have it available in a couple of days.
+> > 
+> > =Dennis Heimbigner
+==================================================
+Dennis,
+I have the new code working; many bugs were solved and I think your mew ExternalVariable is a better solution.
+There seems to be a bug in immediate assignment:
+
+len(1)*Check_1 
+
+calls the put() method; 
+
+len(1)**Check_1 
+
+doesn't.
+

@@ -1,0 +1,12 @@
+Example 5c
+Testclass: jpattern.test.Test5c
+Defined patterns:
+TestPattern=PC_R_Enter & PC_Len_N(1) & PC_Assign_OnM(+Check_1)
+match: subject="before    after" pattern=TestPattern
+extvar.put: before->b
+matchresult=MatchResult(0,1,|before    after|)
+succeed: |^b^efore    after|
+(non-pattern) vars after:
+----------
+Check_1=Check_1(b)
+----------

@@ -1,0 +1,10 @@
+Example 7
+Testclass: jpattern.test.Test7
+Defined patterns:
+TestPattern=PC_Len_N(1)
+match: subject="a" pattern=TestPattern
+matchresult=MatchResult(0,1,|a|)
+succeed: |^a^|
+(non-pattern) vars after:
+----------
+----------

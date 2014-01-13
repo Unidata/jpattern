@@ -1,0 +1,11 @@
+Example 10a
+Testclass: jpattern.test.Test10a
+Defined patterns:
+TestPattern=PC_R_Enter & PC_Len_N(1) & PC_Assign_Imm(+x) & PC_R_Enter & PC_Len_N(1) & PC_Replace_OnM(+x)
+match: subject="abcabc" pattern=TestPattern
+matchresult=MatchResult(0,2,|aacabc|)
+succeed: |^aa^cabc|
+(non-pattern) vars after:
+----------
+x="a"
+----------

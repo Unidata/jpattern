@@ -1,0 +1,12 @@
+Example 1
+Testclass: jpattern.test.Test1
+Defined patterns:
+TestPattern=PC_Pos_N(0) & PC_Span_CS("0123456789") & PC_Char('.') & PC_Span_CH(' ')
+Digs=PC_Span_CS("0123456789")
+Lnum=PC_Pos_N(0) & PC_Span_CS("0123456789") & PC_Char('.') & PC_Span_CH(' ')
+match: subject="41234.  " pattern=TestPattern
+matchresult=MatchResult(0,8,|41234.  |)
+succeed: |^41234.  ^|
+(non-pattern) vars after:
+----------
+----------

@@ -1,0 +1,14 @@
+Example 5b
+Testclass: jpattern.test.Test5b
+Defined patterns:
+TestPattern=PC_R_Enter & PC_Assign_Imm(+Max) & PC_Fence & PC_BreakX_V(+Digit) & (PC_Alt |= (PC_BreakX_X & PC_BreakX_V...)) & PC_R_Enter & PC_R_Enter & PC_Span_V(+Digit) & PC_Assign_Imm(+Cur) & PC_Rpat(+GTS) & PC_Setcur(+Loc) & PC_Assign_Imm(+Max) & PC_Fail
+match: subject="ab123cd4657ef23" pattern=TestPattern
+fail.
+(non-pattern) vars after:
+----------
+Cur="3"
+Digit="0123456789"
+GTS=GTS()
+Loc=|11|
+Max="4657"
+----------

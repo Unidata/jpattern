@@ -1,0 +1,17 @@
+Example 3a1
+Testclass: jpattern.test.Test3a1
+Defined patterns:
+TestPattern=PC_Rpat(+UDigs) & PC_Char('#') & PC_Rpat(+UHdig) & PC_Char('#')
+Bnum=PC_Rpat(+UDigs) & PC_Char('#') & PC_Rpat(+UHdig) & PC_Char('#')
+Digs=PC_Span_V(+DecDigits)
+Hdig=PC_Span_V(+HexDigits)
+UDigs=PC_Rpat(+Digs) & (PC_Arbno_S |= (PC_Char('_') & PC_Rpat(+Digs) & PC_Arbno_S...))
+UHdig=PC_Rpat(+Hdig) & (PC_Arbno_S |= (PC_Char('_') & PC_Rpat(+Hdig) & PC_Arbno_S...))
+match: subject="16#123_abc#" pattern=TestPattern
+matchresult=MatchResult(0,11,|16#123_abc#|)
+succeed: |^16#123_abc#^|
+(non-pattern) vars after:
+----------
+DecDigits="0123456789"
+HexDigits="0123456789abcdefABCDEF"
+----------

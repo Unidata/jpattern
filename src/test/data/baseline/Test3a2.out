@@ -1,0 +1,16 @@
+Example 3a2
+Testclass: jpattern.test.Test3a2
+Defined patterns:
+TestPattern=PC_Rpat(+UDigs) & PC_Char('#') & PC_Rpat(+UHdig) & PC_Char('#')
+Bnum=PC_Rpat(+UDigs) & PC_Char('#') & PC_Rpat(+UHdig) & PC_Char('#')
+Digs=PC_Span_V(+DecDigits)
+Hdig=PC_Span_V(+HexDigits)
+UDigs=PC_Rpat(+Digs) & (PC_Arbno_S |= (PC_Char('_') & PC_Rpat(+Digs) & PC_Arbno_S...))
+UHdig=PC_Rpat(+Hdig) & (PC_Arbno_S |= (PC_Char('_') & PC_Rpat(+Hdig) & PC_Arbno_S...))
+match: subject="a#b#" pattern=TestPattern
+fail.
+(non-pattern) vars after:
+----------
+DecDigits="0123456789"
+HexDigits="0123456789abcdefABCDEF"
+----------

@@ -1,0 +1,13 @@
+Example 4
+Testclass: jpattern.test.Test4
+Defined patterns:
+TestPattern=PC_R_Enter & PC_Rpat(+Balanced_String) & PC_Assign_Imm(+Output) & PC_Fail
+Balanced_String=PC_Rpat(+Element) & (PC_Arbno_X |= (PC_R_Enter & PC_Rpat(+Element) & PC_Arbno_Y & PC_Arbno_X...))
+Capture=PC_R_Enter & PC_Rpat(+Balanced_String) & PC_Assign_Imm(+Output) & PC_Fail
+Element=(PC_Alt |= ((PC_Alt |= (PC_Char('{') & PC_Rpat(+Balanced_String) & PC_Char('}'))) & PC_Char('[') & PC_Rpat(+Balanced_String) & PC_Char(']'))) & PC_NotAny_CS("[]{}")
+match: subject="xy[ab{cd}]" pattern=TestPattern
+fail.
+(non-pattern) vars after:
+----------
+Output=[x xy xy[ab{cd}] y y[ab{cd}] [ab{cd}] a ab ab{cd} b b{cd} {cd} c cd d]
+----------

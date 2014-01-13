@@ -1,0 +1,9 @@
+Example 11
+Testclass: jpattern.test.Test11
+Defined patterns:
+TestPattern=PC_Fence & PC_Bal_CS("[]") & PC_Fail
+match: subject="()(()())" pattern=TestPattern
+fail.
+(non-pattern) vars after:
+----------
+----------
