@@ -23,6 +23,9 @@ abstract public class Test implements PatternBuilder
 	vars.put("TestPattern",TestPattern);
     }
 
+    public boolean anchorMode() {return false;}
+
     abstract public Pattern makePattern();
+
 }
 

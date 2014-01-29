@@ -1,5 +1,7 @@
 package jpattern.util;
 
+import jpattern.Failure;
+
 import java.lang.reflect.Method;
 
 public class Factory
@@ -8,14 +10,14 @@ public class Factory
 
     static public void initialize(String[] pl) {packagelist = pl;}
 
-    static public Class getClass(String cname) throws Error
+    static public Class getClass(String cname) throws Failure
 	{return getClass(cname,null);}
 
-    static public Class getClass(String clname, String defalt) throws Error
+    static public Class getClass(String clname, String defalt) throws Failure
     {
 	if(clname == null) clname = defalt;
 	if(clname == null)
-	    throw new Error("Factory: null class specified");
+	    throw new Failure("Factory: null class specified");
 	Class cl = null;
 	for(String prefix : packagelist) {
 	    try {
@@ -26,43 +28,43 @@ public class Factory
 	    } catch (ClassNotFoundException cnfe) {cl=null;}
 	}
 	if(cl == null)
-	    throw new Error("Factory.getClass: class not found: "+clname);
+	    throw new Failure("Factory.getClass: class not found: "+clname);
 	return cl;
     }
 
-    static public Object newInstance(String cname) throws Error
+    static public Object newInstance(String cname) throws Failure
     {
 	Class cl = getClass(cname);
 	return newInstance(cl);
     }
 
-    static public Object newInstance(Class cl) throws Error
+    static public Object newInstance(Class cl) throws Failure
     {
 	try {
 	    return cl.newInstance();
 	} catch (InstantiationException ie) {
-	    throw new Error(ie.toString());
+	    throw new Failure(ie.toString());
 	} catch (IllegalAccessException iae) {
-	    throw new Error(iae.toString());
+	    throw new Failure(iae.toString());
 	}
     }
 
-    static Object getProperty(String cname, String pname) throws Error
+    static Object getProperty(String cname, String pname) throws Failure
 	{return Factory.getProperty(Factory.getClass(cname),pname);}
 
-    static Object getProperty(Class cl, String pname) throws Error
+    static Object getProperty(Class cl, String pname) throws Failure
     {
 	try {
 	    Method m = cl.getMethod(pname,(Class[])null);
 	    return m.invoke(null);
 	} catch (Exception e) {
-	    throw new Error(e.toString());
+	    throw new Failure(e.toString());
 	}
     }
 
 /*
     // classInitialize method may or may not have a single argument
-    static void classInitialize(Class cl) throws Error
+    static void classInitialize(Class cl) throws Failure
     {
 	try {
 	    Method m
@@ -70,20 +72,20 @@ public class Factory
 				(Class[])null);
 	    m.invoke(null);
 	    return;
-	} catch (Error e) {
-	    throw new Error(e.toString());
+	} catch (Exception e) {
+	    throw new Failure(e.toString());
 	}
     }
 
-    static void classInitialize(Class cl, Object arg) throws Error
+    static void classInitialize(Class cl, Object arg) throws Failure
     {
 	try {
 	    Method m
 		= cl.getMethod(Constants.DEFAULTCLASSINIT,Object.class);
 	    m.invoke(null,arg);
 	    return;
-	} catch (Error e) {
-	    throw new Error(e.toString());
+	} catch (Exception e) {
+	    throw new Failure(e.toString());
 	}
     }
 */

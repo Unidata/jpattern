@@ -11,71 +11,15 @@
 <property name="DEBUG" value="-debugn 3"/>
 <property name="COMPDEBUG" value="-debugn 1"/>
 
-<property name="BUGTEST" value="Test5b"/>
-<property name="BUGDATA" value="'ab123cd4657ef23'"/>
-
 <!-- Path properties -->
 <property name="TESTDATADIR" value="${TOPDIR}/src/test/data"/>
 <property name="BASELINE" value="${TESTDATADIR}/baseline"/>
-<property name="BUILDDIR" value="./build"/>
+<property name="TESTDIR" value="${TOPDIR}/src/test/java/jpattern/test"/>
+<property name="BUILDDIR" value="${TESTDIR}/build"/>
 <property name="CLASSDIR" value="${BUILDDIR}/classes"/>
-<property name="PATTERNDIR" value="./patterns"/>
+<property name="PATTERNDIR" value="${TESTDIR}/patterns"/>
 
 <property name="JPATTERNJAR" value="${TOPDIR}/jpattern.jar"/>
-
-<!-- keep consistent with the macro invocations below -->
-<property name="TESTNUMBERS"
-value="1 2a 2b 3a1 3a2 3a3 3b 3c1 3c2 4 5a 5b 5c 6 7 8a 8b 9 10a 10b 11 12 "
-/>
-
-<!--
-<property name="TESTS" value="
-Test1
-Test2a
-Test2b
-Test3a1
-Test3a2
-Test3a3
-Test3b
-Test3c1
-Test3c2
-Test4
-Test5a
-Test5b
-Test5c
-Test6
-Test7
-Test8a
-Test8b
-Test9
-Test10a
-Test10b
-Test11
-Test12
--->
-
-<property name="DATA1" value="'41234.  '"/>
-<property name="DATA2a" value="'124, 257'"/>
-<property name="DATA2b" value="'  456 004  '"/>
-<property name="DATA3a1" value="'16#123_abc#'"/>
-<property name="DATA3a2" value="'a#b#'"/>
-<property name="DATA3a3" value="'16#123_abc#'"/>
-<property name="DATA3b" value="'16:123_abc#'"/>
-<property name="DATA3c1" value="'16:123_abc:'"/>
-<property name="DATA3c2" value="'16:123_abc#'"/>
-<property name="DATA4" value="'xy[ab{cd}]'"/>
-<property name="DATA5a" value="'before    after'"/>
-<property name="DATA5b" value="'ab123cd4657ef23'"/>
-<property name="DATA5c" value="'before    after'"/>
-<property name="DATA6" value="'b'"/>
-<property name="DATA7" value="'a'"/>
-<property name="DATA8a" value="'a'"/>
-<property name="DATA8b" value="'a'"/>
-<property name="DATA9" value="'a'"/>
-<property name="DATA10a" value="'abcabc'"/>
-<property name="DATA10b" value="'abcabc'"/>
-<property name="DATA11" value="'()(()())'"/>
-<property name="DATA12" value="'ababc'"/>
 
 <property name="DRIVERSRC" value="Driver.java Test.java PatternBuilder.java"/>
 
@@ -89,7 +33,7 @@ Test12
 
 <!-- BUILD TASKS  -->
 
-<target name="all" depends="clean,setup,generate,compile,runtests,report"/>
+<target name="all" depends="clean,setup,compile,runtests,report"/>
 <target name="test" depends="all"/>
 
 <target name="setup">
@@ -98,18 +42,9 @@ Test12
     <echo file="${BUILDDIR}/empty" message=""/>
 </target>
 
-<!--
-<target name="testjar" depends="compile">
-    <copy file="${JPATTERNJAR}" tofile="./${TESTJAR}"/>
-    <jar update="true" destfile="${TESTJAR}" basedir="${CLASSDIR}"/>
-</target>
--->
-
 <target name="clean">
-    <echo message="cleaning..."/>
-    <delete includeemptydirs="true" failonerror="false">
-	<fileset dir="${BUILDDIR}"/>
-    </delete>
+    <echo message="cleaning tests..."/>
+    <delete includeemptydirs="true" failonerror="true" dir="${BUILDDIR}"/>
 </target>
 <!--
         <fileset file="Test?*.class"/>
@@ -128,71 +63,25 @@ Test12
            destdir="${CLASSDIR}"
            srcdir="."
            includes="${DRIVERSRC}"/>
-    <echo message="compiling tests..."/>
-    <javac includeantruntime="false"
-           classpath="${CLASSDIR}:${JPATTERNJAR}"
-           destdir="${CLASSDIR}"
-           srcdir="${BUILDDIR}"
-           includes="Test*.java"/>
 </target>
 
-<target name="generate1">
-    <!-- translate .pat to .java -->
-   <echo message="Generate: Test${NUMBER}"/>
-    <java fork="true"
+<macrodef name="generate1">
+  <attribute name="TEST"/>
+  <sequential>
+     <!-- translate .pat to .java -->
+     <echo message="Generate: @{TEST}"/>
+     <java fork="true"
 	  classpath="${CLASSDIR}:${JPATTERNJAR}"
 	  classname="${COMPMAIN}"
-          input="${PATTERNDIR}/Test${NUMBER}.pat"
-          output="${BUILDDIR}/Test${NUMBER}.java">
+          input="${PATTERNDIR}/@{TEST}.pat"
+          output="${BUILDDIR}/@{TEST}.java">
           <arg line="-tag ${TAG} ${QUOTE}"/>
-    </java>
-</target>
-
-<target name="generate" depends="setup">
-    <echo message="generating..."/>
-    <foreach list="${TESTNUMBERS}" delimiter=" "
-             target="generate1" param="NUMBER"
-             inheritall="true" trim="true" />
-</target>
-
-
-<!--	<gen TEST="Test2a"/>
-<target name="generate">
-    <echo message="generating..."/>
-	<gen TEST="Test1"/>
-	<gen TEST="Test2b"/>
-	<gen TEST="Test3a1"/>
-	<gen TEST="Test3a2"/>
-	<gen TEST="Test3a3"/>
-	<gen TEST="Test3b"/>
-	<gen TEST="Test3c1"/>
-	<gen TEST="Test3c2"/>
-	<gen TEST="Test4"/>
-	<gen TEST="Test5a"/>
-	<gen TEST="Test5b"/>
-	<gen TEST="Test5c"/>
-	<gen TEST="Test6"/>
-	<gen TEST="Test7"/>
-	<gen TEST="Test8a"/>
-	<gen TEST="Test8b"/>
-	<gen TEST="Test9"/>
-	<gen TEST="Test10a"/>
-	<gen TEST="Test10b"/>
-	<gen TEST="Test11"/>
-	<gen TEST="Test12"/>
-</target>
--->
-
-<macrodef name="deref">
-  <attribute name="name"/>
-  <attribute name="value"/>
-  <sequential>
-    <property name="@{name}" value="${@{value}}"/>
-  </sequential>
+      </java>
+   </sequential>
 </macrodef>
 
-<macrodef name="run">
-    <attribute name="NUMBER"/>
+<macrodef name="run1">
+    <attribute name="TEST"/>
     <attribute name="ARGS"/>
     <sequential>
     <!-- run the test -->
@@ -212,58 +101,66 @@ Test12
     </sequential>
 </macrodef>
 
-<target name="run1">
-   <deref name="DATA" value="DATA${NUMBER}"/>
-   <property name="TEST" value="Test${NUMBER}"/>
-   <echo message="${TEST}: subject='${DATA}'"/>
+<macrodef name="run">
+  <attribute name="TEST"/>
+  <attribute name="DATA"/>
+  <sequential>
+   <echo message="@{TEST}: subject='@{DATA}'"/>
+   <!-- generate the test -->
+   <generate1 TEST="@{TEST}"/>
+   <!-- compile the test -->
+   <javac includeantruntime="false"
+           classpath="${CLASSDIR}:${JPATTERNJAR}"
+           destdir="${CLASSDIR}"
+           srcdir="${BUILDDIR}"
+           includes="@{TEST}.java"/>
    <!-- run the test -->
-    <java fork="true"
+   <java fork="true"
           classpath="${CLASSDIR}:${JPATTERNJAR}"
           classname="${TESTMAIN}"
-	  output="${BUILDDIR}/${TEST}.out">
-          <arg line="-test ${TEST} -subject ${DATA}"/>
+	  output="${BUILDDIR}/@{TEST}.out">
+          <arg line="-test @{TEST} -subject @{DATA}"/>
     </java>
     <!-- check the test output-->
     <exec executable="diff"
 	  resultproperty="status"
 	  failonerror="false"
-	  output="${BUILDDIR}/${TEST}.diff">
-	<arg line="-wB ${BASELINE}/${TEST}.out ${BUILDDIR}/${TEST}.out"/>
+	  output="${BUILDDIR}/@{TEST}.diff">
+	<arg line="-wB ${BASELINE}/@{TEST}.out ${BUILDDIR}/@{TEST}.out"/>
     </exec>
+  </sequential>
+</macrodef>
+
+<target name="runtestsx">
 </target>
-<!--
-   <run TEST="Test${NUMBER}" ARGS="-subject ${DATA}"/>
--->
 
 <target name="runtests">
-    <foreach list="${TESTNUMBERS}" delimiter=" "
-             target="run1" param="NUMBER"
-             inheritall="true" trim="true" />
+    <run TEST="Test1" DATA="'41234.  '"/>
+    <run TEST="Test2a" DATA="'124, 257'"/>
+    <run TEST="Test2b" DATA="'  456 004  '"/>
+    <run TEST="Test3a1" DATA="'16#123_abc#'"/>
+    <run TEST="Test3a2" DATA="'a#b#'"/>
+    <run TEST="Test3a3" DATA="'16#123_abc#'"/>
+    <run TEST="Test3b" DATA="'16:123_abc#'"/>
+    <run TEST="Test3c1" DATA="'16:123_abc:'"/>
+    <run TEST="Test3c2" DATA="'16:123_abc#'"/>
+    <run TEST="Test4" DATA="'xy[ab{cd}]'"/>
+    <run TEST="Test5a" DATA="'before    after'"/>
+    <run TEST="Test5b" DATA="'ab123cd4657ef23'"/>
+    <run TEST="Test5c" DATA="'before    after'"/>
+    <run TEST="Test6" DATA="'b'"/>
+    <run TEST="Test7" DATA="'a'"/>
+    <run TEST="Test8a" DATA="'a'"/>
+    <run TEST="Test8b" DATA="'a'"/>
+    <run TEST="Test9" DATA="'a'"/>
+    <run TEST="Test10a" DATA="'abcabc'"/>
+    <run TEST="Test10b" DATA="'abcabc'"/>
+    <run TEST="Test11" DATA="'()(()())'"/>
+    <run TEST="Test12" DATA="'ababc'"/>
+    <run TEST="Test14a" DATA="'this is a test .'"/>
+    <run TEST="Test14b" DATA="'this is a test .'"/>
+    <run TEST="Test14c" DATA="'ab123cd4657ef23'"/>
 </target>
-<!--
-	<run TEST="Test1" ARGS="-subject ${DATA1}"/>
-	<run TEST="Test2a" ARGS="-subject ${DATA2a}"/>
-	<run TEST="Test2b" ARGS="-subject ${DATA2b}"/>
-	<run TEST="Test3a1" ARGS="-subject ${DATA3a1}"/>
-	<run TEST="Test3a2" ARGS="-subject ${DATA3a2}"/>
-	<run TEST="Test3a3" ARGS="-subject ${DATA3a3}"/>
-	<run TEST="Test3b" ARGS="-subject ${DATA3b}"/>
-	<run TEST="Test3c1" ARGS="-subject ${DATA3c1}"/>
-	<run TEST="Test3c2" ARGS="-subject ${DATA3c2}"/>
-	<run TEST="Test4" ARGS="-subject ${DATA4}"/>
-	<run TEST="Test5a" ARGS="-subject ${DATA5a}"/>
-	<run TEST="Test5b" ARGS="-subject ${DATA5b}"/>
-	<run TEST="Test5c" ARGS="-subject ${DATA5c}"/>
-	<run TEST="Test6" ARGS="-subject ${DATA6}"/>
-	<run TEST="Test7" ARGS="-subject ${DATA7}"/>
-	<run TEST="Test8a" ARGS="-subject ${DATA8a}"/>
-	<run TEST="Test8b" ARGS="-subject ${DATA8b}"/>
-	<run TEST="Test9" ARGS="-subject ${DATA9}"/>
-	<run TEST="Test10a" ARGS="-subject ${DATA10a}"/>
-	<run TEST="Test10b" ARGS="-subject ${DATA10b}"/>
-	<run TEST="Test11" ARGS="-subject ${DATA11}"/>
-	<run TEST="Test12" ARGS="-subject ${DATA12}"/>
--->
 
 <target name="report1">
     <basename file="${DIFF}" property="BASENAME" suffix=".diff"/>
@@ -283,4 +180,3 @@ Test12
 
 
 </project>
-

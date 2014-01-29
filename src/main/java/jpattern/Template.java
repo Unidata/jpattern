@@ -1,3 +1,5 @@
+package jpattern;
+
 import jpattern.*;
 import jpattern.compiler.*;
 import jpattern.util.*;

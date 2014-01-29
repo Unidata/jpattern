@@ -40,8 +40,10 @@
 <ul>
     <li><a target="_self" href="#Recursion">Recursive Pattern Matching</a>
     <li><a target="_self" href="#Assignment">Pattern Assignment Operations</a>
+    <li><a target="_self" href="#IO">Input and Output</a>
 </ul>
 <li><a target="_self" href="#JavaComm">Interacting With Java</a>
+<li><a target="_self" href="#Exceptions">Exception Handling</a>
 <li><a target="_self" href="#Compiler">Compiler</a>
 <li><a target="_self" href="#Examples">Examples of Pattern Matching</a>
 <li><a target="_self" href="#Author">Point of Contact</a>
@@ -996,6 +998,22 @@ argument must used.
 </td></tr></table>
 <p>
 
+<h3><u><a name="IO">Input and Output</a></u></h3>
+Jpattern supports the special variable "OUTPUT"
+and "INPUT". Assigning to OUTPUT will cause the value
+to be printed to standard output.
+Referencing the variable INPUT will cause a line of input
+to be read from standard input.
+In addition, the variable "ERROROUTPUT" is defined
+to write to standard error. The following aliases also
+exist: "Output", "Input", "Erroroutput".
+<p>
+These special variables are not created unless Matcher.setIO(...)
+is called.
+<p>
+The special variables are implemented by using the ExternalVariable
+mechanism (see below).
+
 <h2><u><a name="JavaComm">Interacting with Java</a></u></h2>
 It can be desirable for a pattern to interact with the surrounding
 Java code, and some (new) mechanisms are provided for that purpose.
@@ -1220,6 +1238,13 @@ The complete <i>retry()</i> method is defined as follows.
     }
 </pre><p>
 Test case 12 shows the example completely worked out and operational.
+
+<h2><u><a name="Exceptions">Exception Handling</a></u></h2>
+For historical reasons, jpattern signals failures using a single
+exception class <code>Failure</code> that is a subclass of
+<code>RuntimeException</code>. This means that methods have
+no "throws" clauses; but the Failure exception can be caught
+by client code if desired.
 
 <h2><u><a name="Compiler">The JPattern Pseudo-Compiler</a></u></h2>
 The package jpattern.compiler supports the

@@ -9,5 +9,5 @@ match: subject="xy[ab{cd}]" pattern=TestPattern
 fail.
 (non-pattern) vars after:
 ----------
-Output=[x xy xy[ab{cd}] y y[ab{cd}] [ab{cd}] a ab ab{cd} b b{cd} {cd} c cd d]
+Output=[|x| |xy| |xy[ab{cd}]| |y| |y[ab{cd}]| |[ab{cd}]| |a| |ab| |ab{cd}| |b| |b{cd}| |{cd}| |c| |cd| |d|]
 ----------

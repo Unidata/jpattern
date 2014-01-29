@@ -1,11 +1,10 @@
 package jpattern;
 
 import jpattern.util.Debug;
+
 import static jpattern.util.JpatternConstants.CP_R_Restore;
 import static jpattern.util.JpatternConstants.CP_R_Remove;
-import static jpattern.util.JpatternConstants.CP_R_NULL;
 import static jpattern.util.JpatternConstants.PTRMASK;
-import static jpattern.util.JpatternConstants.PTRFLAG;
 
 class Stack
 {
@@ -17,15 +16,15 @@ class Stack
 
     public Stack(int size)
     {
-	this.Stack_Size = size;
-	Stack = new StackEntry[size];
-	// fill in the stack with legitimate entries
-	for(int i=0;i<Stack.length;i++) Stack[i] = new StackEntry();
-	Stack_Init = 0;
-	Stack_Base = Stack_Init;
-	Stack_Ptr = Stack_Init;
-	Region_Level = 0;
-	Debug.setDepth(Region_Level);
+        this.Stack_Size = size;
+        Stack = new StackEntry[size];
+        // fill in the stack with legitimate entries
+        for(int i = 0;i < Stack.length;i++) Stack[i] = new StackEntry();
+        Stack_Init = 0;
+        Stack_Base = Stack_Init;
+        Stack_Ptr = Stack_Init;
+        Region_Level = 0;
+        Debug.setDepth(Region_Level);
     }
 
     //  The pattern matching failure stack
@@ -57,24 +56,25 @@ class Stack
     //	handling of alternatives in the inner region.
 
     void Pop_Region()
+        
     {
         RegionDecr();
 
-	// if nothing was pushed in the inner region, we can just get
-	// rid of it entirely, leaving no traces that it was ever there
-	if(Stack_Ptr == Stack_Base) {
-	    Stack_Ptr = Stack_Base - 2;
-	    Stack_Base = (Stack[Stack_Ptr + 2].Cursor & PTRMASK);
-	} else {
-	    // if stuff was pushed in the inner region, then we have to
-	    // push a PC_R_Restore node so that we properly handle possible
-	    // rematches within the region.
-	    if(Stack_Ptr == Stack_Size) throw new Error("Stack Overflow");
-	    Stack_Ptr = Stack_Ptr + 1;
-	    Stack[Stack_Ptr].Cursor = Matcher.ptrToCursor(Stack_Base);
-	    Stack[Stack_Ptr].Node = CP_R_Restore;
-	    Stack_Base = Matcher.cursorToPtr(Stack[Stack_Base].Cursor);
-	}
+        // if nothing was pushed in the inner region, we can just get
+        // rid of it entirely, leaving no traces that it was ever there
+        if(Stack_Ptr == Stack_Base) {
+            Stack_Ptr = Stack_Base - 2;
+            Stack_Base = (Stack[Stack_Ptr + 2].Cursor & PTRMASK);
+        } else {
+            // if stuff was pushed in the inner region, then we have to
+            // push a PC_R_Restore node so that we properly handle possible
+            // rematches within the region.
+            if(Stack_Ptr == Stack_Size) throw new Failure("Stack Overflow");
+            Stack_Ptr = Stack_Ptr + 1;
+            Stack[Stack_Ptr].Cursor = Matcher.ptrToCursor(Stack_Base);
+            Stack[Stack_Ptr].Node = CP_R_Restore;
+            Stack_Base = Matcher.cursorToPtr(Stack[Stack_Base].Cursor);
+        }
     }
 
     //--------
@@ -83,11 +83,12 @@ class Stack
 
     // Make entry in pattern matching stack with current cursor value
     void Push(PE Node, int Cursor)
+        
     {
-        if(Stack_Ptr == Stack_Size) throw new Error("Stack Overflow");
-	Stack_Ptr = Stack_Ptr + 1;
-	Stack[Stack_Ptr].Cursor = Cursor;
-	Stack[Stack_Ptr].Node	= Node;
+        if(Stack_Ptr == Stack_Size) throw new Failure("Stack Overflow");
+        Stack_Ptr = Stack_Ptr + 1;
+        Stack[Stack_Ptr].Cursor = Cursor;
+        Stack[Stack_Ptr].Node = Node;
     }
 
     //--------
@@ -97,12 +98,13 @@ class Stack
     // Make entry in pattern matching stack with current cursor value
     // and some external pattern state
     void Push(PE Node, int Cursor, ExternalMatcher matcher)
+        
     {
-        if(Stack_Ptr == Stack_Size) throw new Error("Stack Overflow");
-	Stack_Ptr = Stack_Ptr + 1;
-	Stack[Stack_Ptr].Cursor = Cursor;
-	Stack[Stack_Ptr].Node	= Node;
-	Stack[Stack_Ptr].Extern = matcher;
+        if(Stack_Ptr == Stack_Size) throw new Failure("Stack Overflow");
+        Stack_Ptr = Stack_Ptr + 1;
+        Stack[Stack_Ptr].Cursor = Cursor;
+        Stack[Stack_Ptr].Node = Node;
+        Stack[Stack_Ptr].Extern = matcher;
     }
 
     //---------------
@@ -118,44 +120,68 @@ class Stack
     // PC_Remove_Region node.
 
     void Push_Region()
+        
     {
         RegionIncr();
-        if(Stack_Ptr >= Stack_Size-1) throw new Error("Stack Overflow");
-	Stack_Ptr += 2;
-	Stack[Stack_Ptr].Cursor = Matcher.ptrToCursor(Stack_Base);
-	Stack[Stack_Ptr].Node = CP_R_Remove;
-	Stack_Base = Stack_Ptr;
+        if(Stack_Ptr >= Stack_Size - 1) throw new Failure("Stack Overflow");
+        Stack_Ptr += 2;
+        Stack[Stack_Ptr].Cursor = Matcher.ptrToCursor(Stack_Base);
+        Stack[Stack_Ptr].Node = CP_R_Remove;
+        Stack_Base = Stack_Ptr;
     }
 
-    StackEntry Top() {return (Stack_Ptr < Stack_Init?null:Stack[Stack_Ptr]);}
-    StackEntry Nth(int n) {return (n > Stack_Ptr?null:Stack[Stack_Ptr-n]);}
+    StackEntry Top()
+    {
+        return (Stack_Ptr < Stack_Init ? null : Stack[Stack_Ptr]);
+    }
 
-    boolean empty() {return Stack_Ptr <= Stack_Init;}
+    StackEntry Nth(int n)
+    {
+        return (n > Stack_Ptr ? null : Stack[Stack_Ptr - n]);
+    }
 
-    void Pop() {Stack_Ptr--;}
+    boolean empty()
+    {
+        return Stack_Ptr <= Stack_Init;
+    }
+
+    void Pop()
+    {
+        Stack_Ptr--;
+    }
 
     void Push()
     {
-	if(Stack_Ptr == Stack_Size-1)
-	    throw new Error("Stack Overflow");
-	Stack_Ptr++;
+        if(Stack_Ptr == Stack_Size - 1)
+            throw new Failure("Stack Overflow");
+        Stack_Ptr++;
     }
-    void RegionIncr() {Region_Level++; Debug.setDepth(Region_Level);}
-    void RegionDecr() {Region_Level--; Debug.setDepth(Region_Level);}
+
+    void RegionIncr()
+    {
+        Region_Level++;
+        Debug.setDepth(Region_Level);
+    }
+
+    void RegionDecr()
+    {
+        Region_Level--;
+        Debug.setDepth(Region_Level);
+    }
 
     String prettyPrint()
     {
-	String s = "";
-	for(int sp=Stack_Ptr; sp >= 0; sp--) {
-	    String code = " ";
-	    if(sp == Stack_Base) code = "*";
-	    else if(sp == Stack_Init) code = "#";
-	    s += String.format("[%d]%s %s\n",
-				sp,
-				code,
-				Stack[sp].toString());
-	}
-	return s;
+        String s = "";
+        for(int sp = Stack_Ptr;sp >= 0;sp--) {
+            String code = " ";
+            if(sp == Stack_Base) code = "*";
+            else if(sp == Stack_Init) code = "#";
+            s += String.format("[%d]%s %s\n",
+                sp,
+                code,
+                Stack[sp].toString());
+        }
+        return s;
     }
 
 }

@@ -1,8 +1,9 @@
+# JPattern - Snobol4-Style Pattern Matching Primitives for Java
 
-# Project Description
+## Project Description
 
-* Last Updated: January 12, 2014
-* Latest Version: Jpattern 2.0
+* Last Updated: January 29, 2014
+* Latest Version: Jpattern 2.1
 * Minimum JDK Level: JDK 1.5
 
 The goal of the **jpattern** project is to provide
@@ -59,6 +60,9 @@ files.
 through Java 1.7).
 
 ## Installation
+
+
+
 The distribution contains an ant build.xml file
 with the following major tasks defined.
 
@@ -75,7 +79,7 @@ The final product is the jar file called `jpattern.jar`.
 For convenience, a version of that jar file is included.
 It will have been compiled with jdk1.7.
 
-##Testing
+## Testing
 A set of tests is provided in the directory named
     src/test/java/jpatter/tests.
 An ant build.xml file is provided in that directory.
@@ -90,11 +94,28 @@ of a more comprehensive set of pattern tests, please contact the author.
 For more information see the files `doc/jpattern.html`
 and `doc/refman.html`.
 
+## The JPattern Pseudo-Compiler
+The package jpattern.compiler supports the compilation of
+string expressions into equivalent Pattern objects.  It is
+capable of converting a string representation of a pattern
+to equivalent Java code (via a command line interface) or to
+a Pattern object at runtime (via an API).  Refer to the
+reference manual for more details.
+
 ## Change Log
 
 ### Changes Incorporated into Version 2
 
 Minor version levels are indicated in parentheses.
+
+* (1) Fixed the breakx code and added new test cases.
+* (1) Change jpattern.util.Error to jpattern.Failure
+      to avoid conflict with java.lang.Error.
+* (1) Refactored src file to jpattern/util and jpattern/compiler
+      directories.
+* (1) Added direct support for OUTPUT and INPUT variables
+      (see the reference manual for details).
+
 * (0) Fixed a number of foolish errors, some introduced in version 1.2
       (Thanks to Arjan Loeffen of Valid/Vision.). These include:
 	+ The pattern `fence(arb &amp; "b") &amp; "c"`

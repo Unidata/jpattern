@@ -5,6 +5,7 @@ import jpattern.VarMap;
 import jpattern.Variable;
 import jpattern.ExternalPattern;
 import jpattern.ExternalMatcher;
+import jpattern.Failure;
 
 import java.util.regex.PatternSyntaxException;
 
@@ -29,7 +30,7 @@ class REPattern implements ExternalPattern
     public String getName() {return "RE";}
     public int getNargs() {return 1;}
 
-    public ExternalMatcher matcher(Object[] argv) throws Error
+    public ExternalMatcher matcher(Object[] argv) throws Failure
     {
 	java.util.regex.Pattern jpat = null;
 	// assert |argv| >= nargs
@@ -37,16 +38,16 @@ class REPattern implements ExternalPattern
 	if(argv[0] instanceof String) {
 	    String s = (String)argv[0];
 	    if(s.length() == 0)
-		throw new Error("REPattern: zero length string argument: "+argv[0]);
+		throw new Failure("REPattern: zero length string argument: "+argv[0]);
 	    try {
 		jpat = java.util.regex.Pattern.compile(s);
 	    } catch(java.util.regex.PatternSyntaxException pse) {
-		throw new Error("REPattern: illegal regular expression: "+s,pse);
+		throw new Failure("REPattern: illegal regular expression: "+s,pse);
 	    }
 	} else if(argv[0] instanceof java.util.regex.Pattern) {
 	    jpat = (java.util.regex.Pattern)argv[0];
 	} else
-	    throw new Error("REPattern: illegal argument: "+argv[0]);
+	    throw new Failure("REPattern: illegal argument: "+argv[0]);
         ExternalMatcher rem = new REMatcher(jpat);
 	System.out.println("RE Matcher="+rem);
 	return rem;
@@ -65,7 +66,7 @@ class REPattern implements ExternalPattern
 	////////////////////////////////////////////////////////////
 	// Override relevant methods from parent class ExternalMatcher
 
-	public boolean initial() throws Error
+	public boolean initial() throws Failure
 	{
 	    // Try the initial match. We want the maximum match
 	    // starting at the current cursor location.
@@ -89,7 +90,7 @@ class REPattern implements ExternalPattern
 	    return true;
 	}
     
-	public boolean retry() throws Error
+	public boolean retry() throws Failure
 	{
 	    // test report
 	    System.out.println("retry: subject="+Subject);

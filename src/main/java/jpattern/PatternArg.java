@@ -40,7 +40,9 @@ public enum PatternArg
 	PA_Char,	// PC_BreakX_CH
 	PA_String,	// PC_BreakX_CS
 	PA_Var,		// PC_BreakX_V
-	PA_None,	// PC_BreakX_X
+	PA_Char,	// PC_BreakX_CH_X
+	PA_String,	// PC_BreakX_S_X
+	PA_Var,		// PC_BreakX_V_X
 	PA_Char,	// PC_Break_CH
 	PA_String,	// PC_Break_CS
 	PA_Var,		// PC_Break_V

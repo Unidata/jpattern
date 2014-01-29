@@ -7,6 +7,6 @@ public interface ExternalPattern
 {
     public String getName();
     public int getNargs();
-    public ExternalMatcher matcher(Object[] argv) throws Error;
+    public ExternalMatcher matcher(Object[] argv);
 }
 

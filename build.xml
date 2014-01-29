@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
 <project name="jpattern" default="all" basedir=".">
 
-<property name="RELEASE" value="2.0"/>
-<property name="RELEASEDATE" value="2007-10-01"/>
+<property name="RELEASE" value="2.1"/>
+<property name="RELEASEDATE" value="2014-01-29"/>
 
 <!-- Path properties -->
+
+<property name="EXPORT" value="f:/git/export"/>
+
 <property name="RELTOPDIR" value="."/>
 <property name="TOPDIR" location="${RELTOPDIR}"/>
 <property name="TESTDIR" value="${TOPDIR}/src/test/java/jpattern/test"/>
@@ -12,7 +15,10 @@
 <property name="git.dir" value="git"/>
 <property name="git.dst.dir" value="${git.dir}/jpattern"/>
 
+<property name="dist.dir" value="${TOPDIR}/dist"/>
+
 <loadfile srcfile="Inventory" property="INVENTORY"/>
+<loadfile srcfile="BinaryDist" property="BINARYDIST"/>
 
 <taskdef name="foreach"
          classname="net.sf.antcontrib.logic.ForEach"
@@ -60,6 +66,10 @@ QuotedString.java
 <property name="SRCDIR" value="src"/>
 
 <property name="JPATTERNJAR" value="jpattern.jar"/>
+<property name="JPATTERNJAR.SRC" value="jpattern-src.jar"/>
+<property name="JPATTERNJAR.BIN" value="jpattern-${RELEASE}.jar"/>
+<property name="JPATTERNJAR.ALL" value="jpattern-${RELEASE}-dist.jar"/>
+
 <property name="CLASSDIR" value="classes"/>
 
 <property name="MAINCLASS" value="jpattern.compiler.Main"/>
@@ -78,10 +88,10 @@ QuotedString.java
 <target name="compile" depends="classdir">
         <javac includeantruntime="false"
                destdir="${CLASSDIR}"
-               srcdir="src/main/java/jpattern"
-               includes="${ALLSRC}">
+               srcdir="src/main/java/jpattern">
         </javac>
 </target>
+<!--includes="${ALLSRC}"-->
 
 <target name="classdir"><mkdir dir="${CLASSDIR}" /></target>
 
@@ -90,21 +100,14 @@ QuotedString.java
         <fileset file="${JPATTERNJAR}"/>
 	<fileset dir="${CLASSDIR}"/>
     </delete>
-    <ant dir="${TESTDIR}" target="clean"/>
+    <ant dir="${TESTDIR}" target="clean" inheritall="false"/>
 </target>
 
 <target name="test">
-    <ant dir="${TESTDIR}"/>
+    <ant dir="${TESTDIR}" inheritall="false"/>
 </target>
 
 <!-- this is used to create a clean directory for github -->
-
-<path id="">
-      <fileset dir="${BUILDDIR}" includes="Test*.diff">
-	           <not><size value="0"/></not>
-      </fileset>
-</path>
-
 
 <!--
 ##################################################
@@ -118,25 +121,58 @@ Github and Distribution support for Developers
     </delete>
     <mkdir dir="${git.dst.dir}"/>
     <foreach list="${INVENTORY}" delimiter="${line.separator}"
-             target="git.insert" param="PATH"
-             inheritall="true" trim="true" />
-</target>
-
-<target name="git.insert">
-  <echo message="path=|${PATH}|"/>
-  <echo message="dir=|${git.dst.dir}/${PATH}|"/>
-  <copy file="${PATH}" tofile="${git.dst.dir}/${PATH}"/>
+             target="file.insert" param="PATH"
+             inheritall="true" trim="true">
+	<param name="INSERTDIR" value="${git.dst.dir}"/>
+    </foreach>
 </target>
 
 <!-- Export the git/jpattern directory to a specified other directory -->
 
-<property name="EXPORT" value="f:/git/export"/>
-
 <target name="git.export">
   <delete includeemptydirs="true">
-    <fileset dir="${EXPORT}/jpattern" includes="**/*"/>
+    <fileset dir="${EXPORT}/jpattern"
+             includes="**/*"
+             excludes=".git/**"
+    />
   </delete>
-  <copy dir="${git.dst.dir}" todir="${EXPORT}/jpattern"/>
+  <copy todir="${EXPORT}/jpattern">
+	<fileset dir="${git.dst.dir}"/>
+  </copy>
+</target>
+
+<!-- Create a pure source distribution -->
+<target name="jar.src" depends="github">
+   <zip destfile="${JPATTERNJAR.SRC}" basedir="${git.dir}">
+        <include name="jpattern/src/main/**/*"/>	
+   </zip>
+</target>
+
+<!-- Create a binary Distribution -->
+<target name="dist.bin" depends="jarfile,jar.src">
+    <delete includeemptydirs="true" failonerror="false">
+	<fileset dir="${dist.dir}"/>
+    </delete>
+    <mkdir dir="${dist.dir}"/>
+    <foreach list="${BINARYDIST}" delimiter="${line.separator}"
+             target="file.insert" param="PATH"
+             inheritall="true" trim="true">
+	<param name="INSERTDIR" value="${dist.dir}"/>
+    </foreach>
+</target>
+
+<!-- Create a Complete Distribution -->
+<target name="dist" depends="jarfile,github">
+    <!-- Include jpattern.jar -->
+    <copy tofile="${git.dst.dir}/jpattern" file="./jpattern.jar"/>
+    <!-- zip up -->
+    <zip destfile="${JPATTERNJAR.ALL}" basedir="${git.dir}"/>
+</target>
+
+<!-- UTILITY TARGETS -->
+
+<target name="file.insert">
+  <copy file="${PATH}" tofile="${INSERTDIR}/${PATH}"/>
 </target>
 
 </project>

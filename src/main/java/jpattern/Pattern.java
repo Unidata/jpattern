@@ -1,7 +1,6 @@
 package jpattern;
 
-import jpattern.util.Debug;
-import jpattern.util.QuotedString;
+import jpattern.util.*;
 import jpattern.Variable;
 
 import static jpattern.PatternCode.*;
@@ -20,13 +19,13 @@ abstract public class Pattern extends PatternBuilder
     public Matcher matcher()
 	{return new Matcher(this,null,null,null);}
 
-    public Matcher matcher(String subject)
+    public Matcher matcher(String subject) 
 	{return new Matcher(this,subject,null,null);}
 
-    public Matcher matcher(String subject, VarMap vars)
+    public Matcher matcher(String subject, VarMap vars) 
 	{return new Matcher(this,subject,vars,null);}
 
-    public Matcher matcher(String subject, VarMap vars, ExternalMap externs)
+    public Matcher matcher(String subject, VarMap vars, ExternalMap externs) 
 	{return new Matcher(this,subject,vars,externs);}
 
     // Print out just this Pattern node

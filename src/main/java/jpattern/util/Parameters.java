@@ -1,5 +1,7 @@
 package jpattern.util;
 
+import jpattern.Failure;
+
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -100,21 +102,21 @@ public class Parameters extends HashMap<String,Object>
 	    return s;
 	}
 
-	public void load(String fname, boolean override) throws Error
+	public void load(String fname, boolean override) throws Failure
 	{
 	    if(fname == null) return;
 	    BufferedReader in = null;
 	    try {
 	        in = new BufferedReader(new FileReader(fname));
 	    } catch(FileNotFoundException fnfe) {
-	        throw new Error("File cannot be read: "+fname);
+	        throw new Failure("File cannot be read: "+fname);
 	    }
 	    String line;
 	    for(;;) {		
 		try {
 		    line=in.readLine();
 		} catch (IOException ioe) {
-		    throw new Error(ioe.toString());
+		    throw new Failure(ioe.toString());
 		}
 		if(line == null) break;
 		load1(line,override);
@@ -122,7 +124,7 @@ public class Parameters extends HashMap<String,Object>
 	}
 
 	// load a single name=value entry
-	public void load1(String entry, boolean override) throws Error
+	public void load1(String entry, boolean override) throws Failure
 	{
 	    // there are 3 cases:
 	    // 1. x=y	action: add pair(x,y)

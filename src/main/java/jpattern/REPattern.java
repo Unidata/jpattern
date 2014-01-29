@@ -1,10 +1,4 @@
-import jpattern.*;
-import jpattern.compiler.*;
-import jpattern.util.*;
-import jpattern.*;
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+package jpattern;
 
 
 public class REPattern implements ExternalPattern
@@ -18,7 +12,7 @@ public class REPattern implements ExternalPattern
     public String getName() {return "RE";}
     public int getNargs() {return 1;}
 
-    public ExternalMatcher matcher(Object[] argv) throws java.lang.Error
+    public ExternalMatcher matcher(Object[] argv)
     {
 	java.util.regex.Pattern jpat = null;
 	// assert |argv| >= nargs
@@ -26,16 +20,16 @@ public class REPattern implements ExternalPattern
 	if(argv[0] instanceof String) {
 	    String s = (String)argv[0];
 	    if(s.length() == 0)
-		throw new java.lang.Error("REPattern: zero length string argument: "+argv[0]);
+		throw new Failure("REPattern: zero length string argument: "+argv[0]);
 	    try {
 		jpat = java.util.regex.Pattern.compile(s);
 	    } catch(java.util.regex.PatternSyntaxException pse) {
-		throw new java.lang.Error("REPattern: illegal regular expression: "+s,pse);
+		throw new Failure("REPattern: illegal regular expression: "+s,pse);
 	    }
 	} else if(argv[0] instanceof java.util.regex.Pattern) {
 	    jpat = (java.util.regex.Pattern)argv[0];
 	} else
-	    throw new java.lang.Error("REPattern: illegal argument: "+argv[0]);
+	    throw new Failure("REPattern: illegal argument: "+argv[0]);
         ExternalMatcher rem = new REMatcher(jpat);
 	System.out.println("RE Matcher="+rem);
 	return rem;
@@ -54,7 +48,7 @@ public class REPattern implements ExternalPattern
 	////////////////////////////////////////////////////////////
 	// Override relevant methods from parent class ExternalMatcher
 
-	public boolean initial() throws java.lang.Error
+	public boolean initial()
 	{
 	    // Try the initial match. We want the maximum match
 	    // starting at the current cursor location.
@@ -78,7 +72,7 @@ public class REPattern implements ExternalPattern
 	    return true;
 	}
     
-	public boolean retry() throws java.lang.Error
+	public boolean retry()
 	{
 	    // test report
 	    System.out.println("retry: subject="+Subject);
@@ -100,3 +94,4 @@ public class REPattern implements ExternalPattern
 	}
     }
 }
+

@@ -28,9 +28,10 @@ abstract public class ExternalMatcher
     public int Cursor = 0;
 
     // This controls the match intial/retry.
-    public boolean retry() throws Error {return false;}
-    public void fail() throws Error {}
+    public boolean retry() 
+    {return false;}
+    public void fail(){}
 
     // Subclass defined
-    abstract public boolean initial() throws Error;
+    abstract public boolean initial();
 }
