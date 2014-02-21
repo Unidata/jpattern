@@ -2,8 +2,8 @@
 
 ## Project Description
 
-* Last Updated: January 29, 2014
-* Latest Version: Jpattern 2.1
+* Last Updated: February 21, 2014
+* Latest Version: Jpattern 2.2
 * Minimum JDK Level: JDK 1.5
 
 The goal of the **jpattern** project is to provide
@@ -108,6 +108,8 @@ reference manual for more details.
 
 Minor version levels are indicated in parentheses.
 
+* (2) Bug fix release. Fixed a number of bugs reported
+      by Ed Clark (eaclark@ameritech.net).
 * (1) Fixed the breakx code and added new test cases.
 * (1) Change jpattern.util.Error to jpattern.Failure
       to avoid conflict with java.lang.Error.

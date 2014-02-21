@@ -146,7 +146,7 @@
     <run TEST="Test3c2" DATA="'16:123_abc#'"/>
     <run TEST="Test4" DATA="'xy[ab{cd}]'"/>
     <run TEST="Test5a" DATA="'before    after'"/>
-    <run TEST="Test5b" DATA="'ab123cd4657ef23'"/>
+    <run TEST="Test5b" DATA="'ab123cd4657ef29'"/>
     <run TEST="Test5c" DATA="'before    after'"/>
     <run TEST="Test6" DATA="'b'"/>
     <run TEST="Test7" DATA="'a'"/>

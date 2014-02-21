@@ -168,7 +168,7 @@ public class Matcher implements MatchResult
         if(this.Vars.get("ERROROUTPUT") == null)
             this.Vars.put("ERROROUTPUT", err);
         if(this.Vars.get("Erroroutput") == null)
-            this.Vars.put("Erroroutput", in);
+            this.Vars.put("Erroroutput", err);
     }
 
     //////////////////////////////////////////////////
@@ -1214,8 +1214,9 @@ public class Matcher implements MatchResult
             //  Cursor assignment
             case PC_Setcur: {
                 report.print(Cursor, Node);
-                if(Vars != null && Debug.level >= 4) {
-                    Debug.Println("Setcur: " + Node.Var + "=" + (Cursor));
+                if(Vars != null) {
+		    if(Debug.level >= 4)
+			Debug.Println("Setcur: " + Node.Var + "=" + (Cursor));
                     Vars.write(Node.Var, new Integer(Cursor));
                 }
                 state = State.Succeed;

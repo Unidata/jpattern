@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <project name="jpattern" default="all" basedir=".">
 
-<property name="RELEASE" value="2.1"/>
-<property name="RELEASEDATE" value="2014-01-29"/>
+<property name="RELEASE" value="2.2"/>
+<property name="RELEASEDATE" value="2014-02-21"/>
 
 <!-- Path properties -->
 
@@ -159,6 +159,7 @@ Github and Distribution support for Developers
              inheritall="true" trim="true">
 	<param name="INSERTDIR" value="${dist.dir}"/>
     </foreach>
+    <zip destfile="${JPATTERNJAR.BIN}" basedir="${dist.dir}"/>
 </target>
 
 <!-- Create a Complete Distribution -->
@@ -168,6 +169,8 @@ Github and Distribution support for Developers
     <!-- zip up -->
     <zip destfile="${JPATTERNJAR.ALL}" basedir="${git.dir}"/>
 </target>
+
+<target name="dist.all" depends="dist,dist.bin"/>
 
 <!-- UTILITY TARGETS -->
 

@@ -28,7 +28,7 @@ public class Test5b extends Test
         	        & breakx(+Digit)       // scan looking for digits \
 	                & ((span(+Digit)*Cur   // assign next string to Cur \
 	                    & +GTS             // check size(Cur) > Size(Max) \
-	                    & setcur(+Loc))    // if so, save location \
+	                    & setcur(+Loc))    // if so, save end position\
 	                   * Max)              // and assign to Max. \
 	                & fail@;               // seek all alternatives
 	return Find; // top level pattern

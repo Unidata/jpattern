@@ -129,7 +129,8 @@ public class VarMap extends HashMap<String, Object>
             } else if(o instanceof Collection) {
                 // add value to collection
                 ((Collection) o).add(value);
-            }
+            } else // previously unassigned variable
+                this.put(var, value);
         } else
             this.put(var, value);
     }

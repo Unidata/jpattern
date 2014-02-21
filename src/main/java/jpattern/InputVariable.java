@@ -23,7 +23,7 @@ public class InputVariable implements ExternalVariable, SystemObject
         } catch(IOException ioe) {};
         if(line == null) // eof
             return "";
-        return input + EOL;
+        return line + EOL;
     }
 
     public void put(VarMap vars, Object o)
